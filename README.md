@@ -23,10 +23,10 @@ npm run electron:build
 ```
 
 ### Screenshots
-![](https://raw.githubusercontent.com/Gaojianli/Radius-Manager/master/Screenshots/1.png)
-![](https://raw.githubusercontent.com/Gaojianli/Radius-Manager/master/Screenshots/2.png)
-![](https://raw.githubusercontent.com/Gaojianli/Radius-Manager/master/Screenshots/3.png)
-![](https://raw.githubusercontent.com/Gaojianli/Radius-Manager/master/Screenshots/4.png)
+![](Screenshots/1.png?raw=true)
+![](Screenshots/2.png?raw=true)
+![](Screenshots/3.png?raw=true)
+![](Screenshots/4.png?raw=true)
 
 
 ### Customize configuration
