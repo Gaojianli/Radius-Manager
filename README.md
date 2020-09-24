@@ -1,4 +1,4 @@
-# Radius-manager-front
+# Radius-manager
 
 The frontend of the [Radius-Manager-backend](https://github.com/Gaojianli/Radius-Manager-backend), provide a easy way to manage users in the freeradius database.
 
