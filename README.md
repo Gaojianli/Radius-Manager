@@ -1,4 +1,6 @@
-# radius-manager-front
+# Radius-manager-front
+
+The frontend of the [Radius-Manager-backend](https://github.com/Gaojianli/Radius-Manager-backend), provide a easy way to manage users in the freeradius database.
 
 ## Project setup
 ```
@@ -15,10 +17,17 @@ npm run serve
 npm run build
 ```
 
-### Lints and fixes files
+### Compiles electron
 ```
-npm run lint
+npm run electron:build
 ```
+
+### Screenshots
+![](Screenshots/1.png)
+![](Screenshots/2.png)
+![](Screenshots/3.png)
+![](Screenshots/4.png)
+
 
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
