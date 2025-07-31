@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: radius_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: radius123
+      MYSQL_DATABASE: radius_mgnt
+      MYSQL_USER: radius
+      MYSQL_PASSWORD: radius123
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    command: --default-authentication-plugin=mysql_native_password
+    networks:
+      - radius_net
+
+  radius_mgnt:
+    build: .
+    container_name: radius_mgnt_app
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: radius
+      DB_PASSWORD: radius123
+      DB_NAME: radius_mgnt
+      JWT_SECRET: your-super-secret-jwt-key-change-in-production
+      SERVER_PORT: :8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+    networks:
+      - radius_net
+
+volumes:
+  mysql_data:
+
+networks:
+  radius_net:
+    driver: bridge
