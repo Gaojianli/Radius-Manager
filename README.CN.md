@@ -1,6 +1,8 @@
 # 🌐 RADIUS Manager
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Docker Pulls](https://img.shields.io/docker/pulls/gaojianli2333/radius-manager)](https://hub.docker.com/r/gaojianli2333/radius-manager)
+[![Docker Image Size](https://img.shields.io/docker/image-size/gaojianli2333/radius-manager/latest)](https://hub.docker.com/r/gaojianli2333/radius-manager)
 [![Go Version](https://img.shields.io/badge/Go-1.23+-blue.svg)](https://golang.org/)
 [![Vue Version](https://img.shields.io/badge/Vue-3.4+-green.svg)](https://vuejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3+-blue.svg)](https://www.typescriptlang.org/)
@@ -57,46 +59,135 @@
 
 ## 🚀 快速开始
 
+### ⚡ Docker 快速启动
+
+30秒极速部署：
+
+```bash
+# 下载并启动完整服务
+curl -fsSL https://raw.githubusercontent.com/Gaojianli/radius-manager/main/docker-compose.yml -o docker-compose.yml && docker-compose up -d
+```
+
+然后访问 http://localhost:8080 并使用 `admin` / `admin123` 登录
+
 ### 📦 使用 Docker Compose (推荐)
 
-1. 克隆项目并进入目录
-```bash
-git clone https://github.com/Gaojianli/radius-manager.git
-cd radius-manager
+1. 创建 docker-compose.yml 文件
+```yaml
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: radius_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: radius123
+      MYSQL_DATABASE: radius_mgnt
+      MYSQL_USER: radius
+      MYSQL_PASSWORD: radius123
+    volumes:
+      - mysql_data:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pradius123"]
+      timeout: 20s
+      retries: 10
+      interval: 10s
+      start_period: 40s
+    networks:
+      - radius_net
+
+  radius_mgnt:
+    image: gaojianli2333/radius-manager:latest
+    container_name: radius_mgnt_app
+    environment:
+      # 数据库配置
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: radius
+      DB_PASSWORD: radius123
+      DB_NAME: radius_mgnt
+      
+      # 应用配置
+      JWT_SECRET: your-super-secret-jwt-key-change-in-production
+      SERVER_PORT: :8080
+      
+      # 默认管理员用户配置（可根据需要自定义）
+      DEFAULT_ADMIN_USER: admin
+      DEFAULT_ADMIN_PASSWORD: admin123
+      DEFAULT_ADMIN_EMAIL: admin@example.com
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - radius_net
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+
+networks:
+  radius_net:
+    driver: bridge
 ```
 
 2. 启动服务
 ```bash
-make docker-run
+docker-compose up -d
 ```
 
 3. 访问 Web 界面
 - 管理界面: http://localhost:8080
 - API文档: http://localhost:8080/api/v1
 
-默认管理员账户：
-- 用户名: `admin`
-- 密码: `admin123`
+默认管理员账户（可通过环境变量自定义）：
+- 用户名: `admin` (或 `DEFAULT_ADMIN_USER`)
+- 密码: `admin123` (或 `DEFAULT_ADMIN_PASSWORD`)
+
+### 🔒 生产环境部署
+
+生产环境使用时，请创建 `.env` 文件或修改环境变量：
+
+```yaml
+environment:
+  # 安全：生产环境中必须修改这些值！
+  JWT_SECRET: "your-production-jwt-secret-key-min-32-chars"
+  DEFAULT_ADMIN_PASSWORD: "YourSecurePassword123!"
+  
+  # 可选：自定义管理员用户
+  DEFAULT_ADMIN_USER: "admin"
+  DEFAULT_ADMIN_EMAIL: "admin@yourcompany.com"
+```
 
 ### 🛠️ 开发环境搭建
 
-1. 安装依赖
+如需开发或从源码构建：
+
+1. 克隆仓库
+```bash
+git clone https://github.com/Gaojianli/radius-manager.git
+cd radius-manager
+```
+
+2. 安装依赖
 ```bash
 make install
 ```
 
-2. 配置环境变量
+3. 配置环境变量
 ```bash
 cp .env.example .env
 # 编辑 .env 文件，设置数据库连接信息
 ```
 
-3. 启动数据库 (如果使用 Docker)
+4. 启动数据库 (使用 Docker)
 ```bash
 docker-compose up -d mysql
 ```
 
-4. 构建并运行
+5. 构建并运行
 ```bash
 # 构建前端
 make build-frontend
@@ -107,6 +198,15 @@ make run
 # 或者分别启动前后端进行开发
 make dev-frontend  # 启动前端开发服务器 (端口 3000)
 make dev-backend   # 启动后端开发服务器 (端口 8080)
+```
+
+6. 构建自定义 Docker 镜像（可选）
+```bash
+# 构建自定义镜像
+make docker-build
+
+# 或手动构建
+docker build -t your-registry/radius-manager .
 ```
 
 ## 🎯 Web 界面功能

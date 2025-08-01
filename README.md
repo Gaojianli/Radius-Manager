@@ -1,6 +1,8 @@
 # 🌐 RADIUS Manager
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Docker Pulls](https://img.shields.io/docker/pulls/gaojianli2333/radius-manager)](https://hub.docker.com/r/gaojianli2333/radius-manager)
+[![Docker Image Size](https://img.shields.io/docker/image-size/gaojianli2333/radius-manager/latest)](https://hub.docker.com/r/gaojianli2333/radius-manager)
 [![Go Version](https://img.shields.io/badge/Go-1.23+-blue.svg)](https://golang.org/)
 [![Vue Version](https://img.shields.io/badge/Vue-3.4+-green.svg)](https://vuejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3+-blue.svg)](https://www.typescriptlang.org/)
@@ -61,46 +63,135 @@ The codes are all written by Claude code.
 
 ## 🚀 Quick Start
 
+### ⚡ Quick Start with Docker
+
+Get up and running in 30 seconds:
+
+```bash
+# Download and start the complete setup
+curl -fsSL https://raw.githubusercontent.com/Gaojianli/radius-manager/main/docker-compose.yml -o docker-compose.yml && docker-compose up -d
+```
+
+Then visit http://localhost:8080 and login with `admin` / `admin123`
+
 ### 📦 Using Docker Compose (Recommended)
 
-1. Clone the project and navigate to directory
-```bash
-git clone https://github.com/Gaojianli/radius-manager.git
-cd radius-manager
+1. Create docker-compose.yml file
+```yaml
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: radius_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: radius123
+      MYSQL_DATABASE: radius_mgnt
+      MYSQL_USER: radius
+      MYSQL_PASSWORD: radius123
+    volumes:
+      - mysql_data:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pradius123"]
+      timeout: 20s
+      retries: 10
+      interval: 10s
+      start_period: 40s
+    networks:
+      - radius_net
+
+  radius_mgnt:
+    image: gaojianli2333/radius-manager:latest
+    container_name: radius_mgnt_app
+    environment:
+      # Database configuration
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: radius
+      DB_PASSWORD: radius123
+      DB_NAME: radius_mgnt
+      
+      # Application configuration
+      JWT_SECRET: your-super-secret-jwt-key-change-in-production
+      SERVER_PORT: :8080
+      
+      # Default admin user configuration (customize as needed)
+      DEFAULT_ADMIN_USER: admin
+      DEFAULT_ADMIN_PASSWORD: admin123
+      DEFAULT_ADMIN_EMAIL: admin@example.com
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - radius_net
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+
+networks:
+  radius_net:
+    driver: bridge
 ```
 
 2. Start services
 ```bash
-make docker-run
+docker-compose up -d
 ```
 
 3. Access web interface
 - Management UI: http://localhost:8080
 - API Documentation: http://localhost:8080/api/v1
 
-Default admin account:
-- Username: `admin`
-- Password: `admin123`
+Default admin account (customizable via environment variables):
+- Username: `admin` (or `DEFAULT_ADMIN_USER`)
+- Password: `admin123` (or `DEFAULT_ADMIN_PASSWORD`)
+
+### 🔒 Production Deployment
+
+For production use, create a `.env` file or modify the environment variables:
+
+```yaml
+environment:
+  # Security: Change these values in production!
+  JWT_SECRET: "your-production-jwt-secret-key-min-32-chars"
+  DEFAULT_ADMIN_PASSWORD: "YourSecurePassword123!"
+  
+  # Optional: Customize admin user
+  DEFAULT_ADMIN_USER: "admin"
+  DEFAULT_ADMIN_EMAIL: "admin@yourcompany.com"
+```
 
 ### 🛠️ Development Environment Setup
 
-1. Install dependencies
+For development or building from source:
+
+1. Clone the repository
+```bash
+git clone https://github.com/Gaojianli/radius-manager.git
+cd radius-manager
+```
+
+2. Install dependencies
 ```bash
 make install
 ```
 
-2. Configure environment variables
+3. Configure environment variables
 ```bash
 cp .env.example .env
 # Edit .env file to set database connection information
 ```
 
-3. Start database (if using Docker)
+4. Start database (using Docker)
 ```bash
 docker-compose up -d mysql
 ```
 
-4. Build and run
+5. Build and run
 ```bash
 # Build frontend
 make build-frontend
@@ -111,6 +202,15 @@ make run
 # Or start frontend and backend separately for development
 make dev-frontend  # Start frontend dev server (port 3000)
 make dev-backend   # Start backend dev server (port 8080)
+```
+
+6. Build your own Docker image (optional)
+```bash
+# Build custom image
+make docker-build
+
+# Or manually build
+docker build -t your-registry/radius-manager .
 ```
 
 ## 🎯 Web Interface Features
