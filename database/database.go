@@ -30,11 +30,34 @@ func Connect() error {
 	)
 
 	var err error
-	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
-	})
 
-	if err != nil {
+	// 重试连接数据库，最多重试 30 次，每次间隔 2 秒
+	maxRetries := 30
+	for i := 0; i < maxRetries; i++ {
+		DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
+			Logger: logger.Default.LogMode(logger.Info),
+		})
+
+		if err == nil {
+			// 测试连接
+			sqlDB, testErr := DB.DB()
+			if testErr == nil {
+				if pingErr := sqlDB.Ping(); pingErr == nil {
+					log.Printf("Database connected successfully on attempt %d/%d", i+1, maxRetries)
+					break
+				}
+			}
+		}
+
+		if i == maxRetries-1 {
+			return fmt.Errorf("failed to connect to database after %d attempts: %w", maxRetries, err)
+		}
+
+		log.Printf("Database connection attempt %d/%d failed: %v, retrying in 2 seconds...", i+1, maxRetries, err)
+		time.Sleep(2 * time.Second)
+	}
+
+	if DB == nil {
 		return fmt.Errorf("failed to connect to database: %w", err)
 	}
 
@@ -73,9 +96,9 @@ func createDefaultAdmin() error {
 
 	if count == 0 {
 		admin := models.User{
-			Username: "admin",
-			Email:    "admin@example.com",
-			Password: "admin123",
+			Username: config.AppConfig.DefaultAdminUser,
+			Email:    config.AppConfig.DefaultAdminEmail,
+			Password: config.AppConfig.DefaultAdminPass,
 			IsAdmin:  true,
 			Banned:   false,
 		}
@@ -84,7 +107,9 @@ func createDefaultAdmin() error {
 			return err
 		}
 
-		log.Println("Default admin created: username=admin, password=admin123")
+		log.Printf("Default admin created: username=%s, email=%s",
+			config.AppConfig.DefaultAdminUser,
+			config.AppConfig.DefaultAdminEmail)
 	}
 
 	return nil

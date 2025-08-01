@@ -325,13 +325,25 @@ FreeRADIUS uses a two-phase verification mode to ensure security and performance
 
 | Variable | Default | Description |
 |----------|---------|-------------|
+| **Database Configuration** | | |
 | DB_HOST | localhost | MySQL host address |
 | DB_PORT | 3306 | MySQL port |
 | DB_USER | root | MySQL username |
 | DB_PASSWORD | - | MySQL password |
 | DB_NAME | radius_mgnt | Database name |
+| **Application Configuration** | | |
 | JWT_SECRET | your-secret-key | JWT signing key |
 | SERVER_PORT | :8080 | Server port |
+| **Default Admin Configuration** | | |
+| DEFAULT_ADMIN_USER | admin | Default admin username (created only if no admin exists) |
+| DEFAULT_ADMIN_PASSWORD | admin123 | Default admin password (created only if no admin exists) |
+| DEFAULT_ADMIN_EMAIL | admin@example.com | Default admin email (created only if no admin exists) |
+
+### 🔐 Security Notes
+
+- **Change default credentials**: Always modify `DEFAULT_ADMIN_PASSWORD` and `JWT_SECRET` in production
+- **One-time creation**: Default admin is created only when no admin users exist in the database
+- **Environment override**: Use environment variables to customize admin credentials without code changes
 
 ## 🔒 Security Features
 

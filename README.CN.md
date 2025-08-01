@@ -510,13 +510,25 @@ radtest testuser password123 localhost 0 testing123
 
 | 变量名 | 默认值 | 描述 |
 |--------|--------|------|
+| **数据库配置** | | |
 | DB_HOST | localhost | MySQL 主机地址 |
 | DB_PORT | 3306 | MySQL 端口 |
 | DB_USER | root | MySQL 用户名 |
 | DB_PASSWORD | - | MySQL 密码 |
 | DB_NAME | radius_mgnt | 数据库名 |
+| **应用配置** | | |
 | JWT_SECRET | your-secret-key | JWT 签名密钥 |
 | SERVER_PORT | :8080 | 服务器端口 |
+| **默认管理员配置** | | |
+| DEFAULT_ADMIN_USER | admin | 默认管理员用户名（仅在无管理员时创建） |
+| DEFAULT_ADMIN_PASSWORD | admin123 | 默认管理员密码（仅在无管理员时创建） |
+| DEFAULT_ADMIN_EMAIL | admin@example.com | 默认管理员邮箱（仅在无管理员时创建） |
+
+### 🔐 安全注意事项
+
+- **修改默认凭据**：生产环境中务必修改 `DEFAULT_ADMIN_PASSWORD` 和 `JWT_SECRET`
+- **一次性创建**：默认管理员仅在数据库中无管理员用户时创建
+- **环境变量覆盖**：使用环境变量自定义管理员凭据，无需修改代码
 
 ## 🔒 安全特性
 

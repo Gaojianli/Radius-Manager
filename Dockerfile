@@ -28,7 +28,7 @@ RUN go mod download
 # 复制源代码
 COPY . .
 # 复制前端构建产物
-COPY --from=frontend-builder /app/web/dist ./static/dist
+COPY --from=frontend-builder /app/static/dist ./static/dist
 
 # 构建后端
 RUN CGO_ENABLED=0 GOOS=linux go build -o radius_mgnt .
@@ -42,6 +42,8 @@ WORKDIR /root/
 # 复制可执行文件和配置
 COPY --from=backend-builder /app/radius_mgnt .
 COPY --from=backend-builder /app/.env.example .env.example
+# 复制静态文件
+COPY --from=backend-builder /app/static ./static
 
 EXPOSE 8080
 
