@@ -7,6 +7,8 @@
 
 A modern RADIUS user management system built with **CloudWeGo Hertz** and **Vue 3**. Provides complete user authentication, authorization, and management features for FreeRADIUS with a responsive web interface.
 
+The codes are all written by Claude code.
+
 [中文文档](./README.CN.md)
 
 ## ✨ Project Highlights
