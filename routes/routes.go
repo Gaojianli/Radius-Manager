@@ -6,6 +6,7 @@ import (
 
 	"github.com/Gaojianli/raduis_mgnt/controllers"
 	"github.com/Gaojianli/raduis_mgnt/middleware"
+	"github.com/Gaojianli/raduis_mgnt/static"
 )
 
 func SetupRoutes(h *server.Hertz) {
@@ -29,6 +30,7 @@ func SetupRoutes(h *server.Hertz) {
 			{
 				user.GET("/profile", userController.GetProfile)
 				user.PUT("/change-password", userController.ChangePassword)
+				user.GET("/stats", userController.GetStats)
 			}
 
 			admin := v1.Group("/admin")
@@ -37,9 +39,10 @@ func SetupRoutes(h *server.Hertz) {
 				admin.GET("/users", userController.GetUsers)
 				admin.POST("/users", userController.AdminCreateUser)
 				admin.PUT("/users/:id/password", userController.AdminChangePassword)
-				admin.PUT("/users/:id/status", userController.ToggleUserStatus)
 				admin.PUT("/users/:id/ban", userController.AdminToggleBanUser)
 				admin.DELETE("/users/:id", userController.AdminDeleteUser)
+				admin.GET("/auth-logs", userController.GetAuthLogs)
+				admin.GET("/stats", userController.GetAdminStats)
 			}
 
 			radius := v1.Group("/radius")
@@ -49,5 +52,10 @@ func SetupRoutes(h *server.Hertz) {
 				radius.POST("/accounting", radiusController.Accounting)
 			}
 		}
+	}
+
+	// 设置静态文件服务 (放在所有API路由之后)
+	if err := static.SetupStaticRoutes(h); err != nil {
+		panic("Failed to setup static routes: " + err.Error())
 	}
 }

@@ -21,6 +21,11 @@ go.work
 /radius_mgnt
 /bin/
 /dist/
+/static/dist/
+
+# Frontend
+/web/node_modules/
+/web/dist/
 
 # Environment variables
 .env
@@ -91,4 +96,4 @@ dev.yml
 # Configuration overrides
 config.local.yaml
 config.local.yml
-radius_mgnt
+/raduis_mgnt

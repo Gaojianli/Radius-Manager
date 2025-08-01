@@ -74,12 +74,12 @@ func InitJWT() error {
 				return nil, jwt.ErrFailedAuthentication
 			}
 
-			return &user, nil
+			return user, nil
 		},
 		Authorizator: func(data interface{}, ctx context.Context, c *app.RequestContext) bool {
 			if claims, ok := data.(*Claims); ok {
 				user, err := database.DAO.User.GetByID(ctx, claims.UserID)
-				if err != nil || !user.Status || user.Banned {
+				if err != nil || user.Banned {
 					return false
 				}
 				return true

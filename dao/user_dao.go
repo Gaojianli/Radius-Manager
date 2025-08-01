@@ -13,15 +13,16 @@ type UserDAO interface {
 	GetByID(ctx context.Context, id uint) (*models.User, error)
 	GetByUsername(ctx context.Context, username string) (*models.User, error)
 	GetByUsernameOrEmail(ctx context.Context, username, email string) (*models.User, error)
-	GetByUsernameAndStatus(ctx context.Context, username string, status bool) (*models.User, error)
 	GetByUsernameForAuth(ctx context.Context, username string) (*models.User, error)
 	Update(ctx context.Context, user *models.User) error
 	Delete(ctx context.Context, id uint) error
 	List(ctx context.Context, offset, limit int) ([]models.User, int64, error)
 	CountAdmins(ctx context.Context) (int64, error)
 	UpdatePassword(ctx context.Context, id uint, password, salt string) error
-	UpdateStatus(ctx context.Context, id uint, status bool) error
 	UpdateBanned(ctx context.Context, id uint, banned bool) error
+	GetTotalCount(ctx context.Context) (int64, error)
+	GetActiveCount(ctx context.Context) (int64, error)
+	GetBannedCount(ctx context.Context) (int64, error)
 }
 
 type userDAOImpl struct {
@@ -63,14 +64,6 @@ func (d *userDAOImpl) GetByUsernameOrEmail(ctx context.Context, username, email 
 	return &user, nil
 }
 
-func (d *userDAOImpl) GetByUsernameAndStatus(ctx context.Context, username string, status bool) (*models.User, error) {
-	var user models.User
-	err := d.db.WithContext(ctx).Where("username = ? AND status = ?", username, status).First(&user).Error
-	if err != nil {
-		return nil, err
-	}
-	return &user, nil
-}
 
 func (d *userDAOImpl) Update(ctx context.Context, user *models.User) error {
 	return d.db.WithContext(ctx).Save(user).Error
@@ -108,13 +101,10 @@ func (d *userDAOImpl) UpdatePassword(ctx context.Context, id uint, password, sal
 	}).Error
 }
 
-func (d *userDAOImpl) UpdateStatus(ctx context.Context, id uint, status bool) error {
-	return d.db.WithContext(ctx).Model(&models.User{}).Where("id = ?", id).Update("status", status).Error
-}
 
 func (d *userDAOImpl) GetByUsernameForAuth(ctx context.Context, username string) (*models.User, error) {
 	var user models.User
-	err := d.db.WithContext(ctx).Where("username = ? AND status = ? AND banned = ?", username, true, false).First(&user).Error
+	err := d.db.WithContext(ctx).Where("username = ? AND banned = ?", username, false).First(&user).Error
 	if err != nil {
 		return nil, err
 	}
@@ -123,4 +113,22 @@ func (d *userDAOImpl) GetByUsernameForAuth(ctx context.Context, username string)
 
 func (d *userDAOImpl) UpdateBanned(ctx context.Context, id uint, banned bool) error {
 	return d.db.WithContext(ctx).Model(&models.User{}).Where("id = ?", id).Update("banned", banned).Error
+}
+
+func (d *userDAOImpl) GetTotalCount(ctx context.Context) (int64, error) {
+	var count int64
+	err := d.db.WithContext(ctx).Model(&models.User{}).Count(&count).Error
+	return count, err
+}
+
+func (d *userDAOImpl) GetActiveCount(ctx context.Context) (int64, error) {
+	var count int64
+	err := d.db.WithContext(ctx).Model(&models.User{}).Where("banned = ?", false).Count(&count).Error
+	return count, err
+}
+
+func (d *userDAOImpl) GetBannedCount(ctx context.Context) (int64, error) {
+	var count int64
+	err := d.db.WithContext(ctx).Model(&models.User{}).Where("banned = ?", true).Count(&count).Error
+	return count, err
 }

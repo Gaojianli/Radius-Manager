@@ -31,6 +31,34 @@ type AdminChangePasswordRequest struct {
 	NewPassword string `json:"new_password" binding:"required,min=6"`
 }
 
+type StatsResponse struct {
+	TotalUsers  int64 `json:"total_users"`
+	ActiveUsers int64 `json:"active_users"`
+	BannedUsers int64 `json:"banned_users"`
+	AuthCount   int64 `json:"auth_count"`
+}
+
+type AuthLogsResponse struct {
+	Data struct {
+		Logs       []AuthLogResponse `json:"logs"`
+		Pagination struct {
+			Page  int   `json:"page"`
+			Limit int   `json:"limit"`
+			Total int64 `json:"total"`
+		} `json:"pagination"`
+	} `json:"data"`
+}
+
+type AuthLogResponse struct {
+	ID        uint   `json:"id"`
+	Username  string `json:"username"`
+	AuthType  string `json:"auth_type"`
+	Success   bool   `json:"success"`
+	IPAddress string `json:"ip_address"`
+	UserAgent string `json:"user_agent"`
+	CreatedAt string `json:"created_at"`
+}
+
 func (uc *UserController) AdminCreateUser(ctx context.Context, c *app.RequestContext) {
 	var req CreateUserRequest
 	if err := c.BindAndValidate(&req); err != nil {
@@ -61,7 +89,6 @@ func (uc *UserController) AdminCreateUser(ctx context.Context, c *app.RequestCon
 		Email:    req.Email,
 		Password: req.Password,
 		IsAdmin:  isAdmin,
-		Status:   true,
 	}
 
 	if err := database.DAO.User.Create(ctx, &user); err != nil {
@@ -254,42 +281,6 @@ func (uc *UserController) AdminChangePassword(ctx context.Context, c *app.Reques
 	})
 }
 
-func (uc *UserController) ToggleUserStatus(ctx context.Context, c *app.RequestContext) {
-	userIDStr := c.Param("id")
-	userID, err := strconv.ParseUint(userIDStr, 10, 32)
-	if err != nil {
-		c.JSON(consts.StatusBadRequest, map[string]interface{}{
-			"code":    consts.StatusBadRequest,
-			"message": "Invalid user ID",
-		})
-		return
-	}
-
-	user, err := database.DAO.User.GetByID(ctx, uint(userID))
-	if err != nil {
-		c.JSON(consts.StatusNotFound, map[string]interface{}{
-			"code":    consts.StatusNotFound,
-			"message": "User not found",
-		})
-		return
-	}
-
-	user.Status = !user.Status
-	if err := database.DAO.User.Update(ctx, user); err != nil {
-		c.JSON(consts.StatusInternalServerError, map[string]interface{}{
-			"code":    consts.StatusInternalServerError,
-			"message": "Failed to update user status",
-		})
-		return
-	}
-
-	c.JSON(consts.StatusOK, map[string]interface{}{
-		"code":    consts.StatusOK,
-		"message": "User status updated successfully",
-		"data":    user.ToResponse(),
-	})
-}
-
 func (uc *UserController) AdminDeleteUser(ctx context.Context, c *app.RequestContext) {
 	userIDStr := c.Param("id")
 	userID, err := strconv.ParseUint(userIDStr, 10, 32)
@@ -387,6 +378,7 @@ func (uc *UserController) AdminToggleBanUser(ctx context.Context, c *app.Request
 		return
 	}
 
+	// 更新用户状态
 	user.Banned = newBannedStatus
 	action := "banned"
 	if !newBannedStatus {
@@ -397,5 +389,190 @@ func (uc *UserController) AdminToggleBanUser(ctx context.Context, c *app.Request
 		"code":    consts.StatusOK,
 		"message": fmt.Sprintf("User %s successfully", action),
 		"data":    user.ToResponse(),
+	})
+}
+
+func (uc *UserController) GetStats(ctx context.Context, c *app.RequestContext) {
+	currentUser, err := middleware.GetCurrentUser(ctx, c)
+	if err != nil {
+		c.JSON(consts.StatusUnauthorized, map[string]interface{}{
+			"code":    consts.StatusUnauthorized,
+			"message": "Unauthorized",
+		})
+		return
+	}
+
+	var stats StatsResponse
+
+	if currentUser.IsAdmin {
+		// 管理员可以查看所有统计数据
+		totalUsers, err := database.DAO.User.GetTotalCount(ctx)
+		if err != nil {
+			c.JSON(consts.StatusInternalServerError, map[string]interface{}{
+				"code":    consts.StatusInternalServerError,
+				"message": "Failed to get total users count",
+			})
+			return
+		}
+
+		activeUsers, err := database.DAO.User.GetActiveCount(ctx)
+		if err != nil {
+			c.JSON(consts.StatusInternalServerError, map[string]interface{}{
+				"code":    consts.StatusInternalServerError,
+				"message": "Failed to get active users count",
+			})
+			return
+		}
+
+		bannedUsers, err := database.DAO.User.GetBannedCount(ctx)
+		if err != nil {
+			c.JSON(consts.StatusInternalServerError, map[string]interface{}{
+				"code":    consts.StatusInternalServerError,
+				"message": "Failed to get banned users count",
+			})
+			return
+		}
+
+		totalAuthCount, err := database.DAO.AuthLog.GetTotalSuccessCount(ctx)
+		if err != nil {
+			c.JSON(consts.StatusInternalServerError, map[string]interface{}{
+				"code":    consts.StatusInternalServerError,
+				"message": "Failed to get total auth count",
+			})
+			return
+		}
+
+		stats = StatsResponse{
+			TotalUsers:  totalUsers,
+			ActiveUsers: activeUsers,
+			BannedUsers: bannedUsers,
+			AuthCount:   totalAuthCount,
+		}
+	} else {
+		// 普通用户只能查看自己的授权次数
+		authCount, err := database.DAO.AuthLog.GetSuccessCountByUsername(ctx, currentUser.Username)
+		if err != nil {
+			c.JSON(consts.StatusInternalServerError, map[string]interface{}{
+				"code":    consts.StatusInternalServerError,
+				"message": "Failed to get auth count",
+			})
+			return
+		}
+
+		stats = StatsResponse{
+			AuthCount: authCount,
+		}
+	}
+
+	c.JSON(consts.StatusOK, map[string]interface{}{
+		"code": consts.StatusOK,
+		"data": stats,
+	})
+}
+
+// 管理员专用统计接口
+func (uc *UserController) GetAdminStats(ctx context.Context, c *app.RequestContext) {
+	// 管理员可以查看所有统计数据
+	totalUsers, err := database.DAO.User.GetTotalCount(ctx)
+	if err != nil {
+		c.JSON(consts.StatusInternalServerError, map[string]interface{}{
+			"code":    consts.StatusInternalServerError,
+			"message": "Failed to get total users count",
+		})
+		return
+	}
+
+	activeUsers, err := database.DAO.User.GetActiveCount(ctx)
+	if err != nil {
+		c.JSON(consts.StatusInternalServerError, map[string]interface{}{
+			"code":    consts.StatusInternalServerError,
+			"message": "Failed to get active users count",
+		})
+		return
+	}
+
+	bannedUsers, err := database.DAO.User.GetBannedCount(ctx)
+	if err != nil {
+		c.JSON(consts.StatusInternalServerError, map[string]interface{}{
+			"code":    consts.StatusInternalServerError,
+			"message": "Failed to get banned users count",
+		})
+		return
+	}
+
+	totalAuthCount, err := database.DAO.AuthLog.GetTotalSuccessCount(ctx)
+	if err != nil {
+		c.JSON(consts.StatusInternalServerError, map[string]interface{}{
+			"code":    consts.StatusInternalServerError,
+			"message": "Failed to get total auth count",
+		})
+		return
+	}
+
+	stats := StatsResponse{
+		TotalUsers:  totalUsers,
+		ActiveUsers: activeUsers,
+		BannedUsers: bannedUsers,
+		AuthCount:   totalAuthCount,
+	}
+
+	c.JSON(consts.StatusOK, map[string]interface{}{
+		"code": consts.StatusOK,
+		"data": stats,
+	})
+}
+
+func (uc *UserController) GetAuthLogs(ctx context.Context, c *app.RequestContext) {
+	// 获取分页参数
+	page := c.DefaultQuery("page", "1")
+	limit := c.DefaultQuery("limit", "20")
+	username := c.Query("username") // 可选的用户名筛选
+
+	pageInt, err := strconv.Atoi(page)
+	if err != nil || pageInt < 1 {
+		pageInt = 1
+	}
+
+	limitInt, err := strconv.Atoi(limit)
+	if err != nil || limitInt < 1 || limitInt > 100 {
+		limitInt = 20
+	}
+
+	offset := (pageInt - 1) * limitInt
+
+	// 查询日志
+	logs, total, err := database.DAO.AuthLog.List(ctx, offset, limitInt, username)
+	if err != nil {
+		c.JSON(consts.StatusInternalServerError, map[string]interface{}{
+			"code":    consts.StatusInternalServerError,
+			"message": "Failed to get auth logs",
+		})
+		return
+	}
+
+	// 转换为响应格式
+	logResponses := make([]AuthLogResponse, len(logs))
+	for i, log := range logs {
+		logResponses[i] = AuthLogResponse{
+			ID:        log.ID,
+			Username:  log.Username,
+			AuthType:  log.AuthType,
+			Success:   log.Success,
+			IPAddress: log.IPAddress,
+			UserAgent: log.UserAgent,
+			CreatedAt: log.CreatedAt.Format("2006-01-02 15:04:05"),
+		}
+	}
+
+	c.JSON(consts.StatusOK, map[string]interface{}{
+		"code": consts.StatusOK,
+		"data": map[string]interface{}{
+			"logs": logResponses,
+			"pagination": map[string]interface{}{
+				"page":  pageInt,
+				"limit": limitInt,
+				"total": total,
+			},
+		},
 	})
 }

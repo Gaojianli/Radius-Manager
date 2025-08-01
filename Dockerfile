@@ -1,21 +1,41 @@
-FROM golang:1.21-alpine AS builder
+# 前端构建阶段
+FROM node:18-alpine AS frontend-builder
+
+WORKDIR /app/web
+
+# 复制前端文件
+COPY web/package.json web/package-lock.json* ./
+RUN npm ci
+
+COPY web/ ./
+RUN npm run build
+
+# 后端构建阶段
+FROM golang:1.21-alpine AS backend-builder
 
 WORKDIR /app
 
+# 复制Go模块文件
 COPY go.mod go.sum ./
 RUN go mod download
 
+# 复制源代码
 COPY . .
+# 复制前端构建产物
+COPY --from=frontend-builder /app/static ./static
 
+# 构建后端
 RUN CGO_ENABLED=0 GOOS=linux go build -o radius_mgnt .
 
+# 运行阶段
 FROM alpine:latest
 
 RUN apk --no-cache add ca-certificates tzdata
 WORKDIR /root/
 
-COPY --from=builder /app/radius_mgnt .
-COPY --from=builder /app/.env.example .env.example
+# 复制可执行文件和配置
+COPY --from=backend-builder /app/radius_mgnt .
+COPY --from=backend-builder /app/.env.example .env.example
 
 EXPOSE 8080
 

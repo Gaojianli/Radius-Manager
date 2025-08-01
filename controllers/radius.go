@@ -2,11 +2,13 @@ package controllers
 
 import (
 	"context"
+	"time"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
 	"github.com/Gaojianli/raduis_mgnt/database"
+	"github.com/Gaojianli/raduis_mgnt/models"
 )
 
 type RadiusController struct{}
@@ -17,18 +19,23 @@ type RadiusAuthRequest struct {
 }
 
 type RadiusAuthResponse struct {
-	Result   string            `json:"result"`
-	Username string            `json:"username,omitempty"`
-	Message  string            `json:"message,omitempty"`
-	Attrs    map[string]string `json:"attrs,omitempty"`
+	StatusCode int    `json:"REST-HTTP-Status-Code,omitempty"`
+	Reply      string `json:"reply:Reply-Message,omitempty"`
+	AuthType   string `json:"control:Auth-Type"`
+}
+
+type RadiusAuthorizeResponse struct {
+	Reply   string `json:"reply:Reply-Message,omitempty"`
+	Control string `json:"control:Auth-Type,omitempty"`
 }
 
 func (rc *RadiusController) Authenticate(ctx context.Context, c *app.RequestContext) {
 	var req RadiusAuthRequest
 	if err := c.BindAndValidate(&req); err != nil {
 		c.JSON(consts.StatusBadRequest, RadiusAuthResponse{
-			Result:  "reject",
-			Message: "Invalid request format",
+			StatusCode: 400,
+			Reply:      "Invalid request format",
+			AuthType:   "Reject",
 		})
 		return
 	}
@@ -36,34 +43,56 @@ func (rc *RadiusController) Authenticate(ctx context.Context, c *app.RequestCont
 	user, err := database.DAO.User.GetByUsernameForAuth(ctx, req.Username)
 	if err != nil {
 		c.JSON(consts.StatusOK, RadiusAuthResponse{
-			Result:  "reject",
-			Message: "Authentication failed: user not valid",
+			StatusCode: 404,
+			Reply:      "Authentication failed: user not found or disabled",
+			AuthType:   "Reject",
 		})
 		return
 	}
 
 	if !user.CheckPassword(req.Password) {
+		// 记录密码错误的认证日志
+		authLog := &models.AuthLog{
+			Username:  req.Username,
+			AuthType:  "authenticate",
+			Success:   false,
+			IPAddress: c.ClientIP(),
+			UserAgent: string(c.GetHeader("User-Agent")),
+			CreatedAt: time.Now(),
+		}
+		
+		// 异步记录日志，不影响响应速度
+		go func() {
+			database.DAO.AuthLog.Create(context.Background(), authLog)
+		}()
+
 		c.JSON(consts.StatusOK, RadiusAuthResponse{
-			Result:  "reject",
-			Message: "Authentication failed: invalid password",
+			StatusCode: 403,
+			Reply:      "Authentication failed: invalid password",
+			AuthType:   "Reject",
 		})
 		return
 	}
 
+	// 记录认证成功的日志
+	authLog := &models.AuthLog{
+		Username:  user.Username,
+		AuthType:  "authenticate",
+		Success:   true,
+		IPAddress: c.ClientIP(),
+		UserAgent: string(c.GetHeader("User-Agent")),
+		CreatedAt: time.Now(),
+	}
+	
+	// 异步记录日志，不影响响应速度
+	go func() {
+		database.DAO.AuthLog.Create(context.Background(), authLog)
+	}()
+
 	c.JSON(consts.StatusOK, RadiusAuthResponse{
-		Result:   "accept",
-		Username: user.Username,
-		Message:  "Authentication successful",
-		Attrs: map[string]string{
-			"User-ID": user.Username,
-			"User-Role": func() string {
-				if user.IsAdmin {
-					return "admin"
-				}
-				return "user"
-			}(),
-			"Session-Type": "authenticated",
-		},
+		StatusCode: 200,
+		Reply:      "Welcome, " + user.Username,
+		AuthType:   "Accept",
 	})
 }
 
@@ -73,36 +102,24 @@ func (rc *RadiusController) Authorize(ctx context.Context, c *app.RequestContext
 	}
 
 	if err := c.BindAndValidate(&req); err != nil {
-		c.JSON(consts.StatusBadRequest, RadiusAuthResponse{
-			Result:  "reject",
-			Message: "Invalid request format",
+		c.JSON(consts.StatusBadRequest, RadiusAuthorizeResponse{
+			Reply: "Invalid request format",
 		})
 		return
 	}
 
-	user, err := database.DAO.User.GetByUsernameForAuth(ctx, req.Username)
-	if err != nil {
-		c.JSON(consts.StatusOK, RadiusAuthResponse{
-			Result:  "reject",
-			Message: "User not found, disabled, or banned",
+	_, err := database.DAO.User.GetByUsernameForAuth(ctx, req.Username)
+	success := err == nil
+
+	if !success {
+		c.JSON(consts.StatusOK, RadiusAuthorizeResponse{
+			Reply: "User not found, disabled, or banned",
 		})
 		return
 	}
 
-	c.JSON(consts.StatusOK, RadiusAuthResponse{
-		Result:   "accept",
-		Username: user.Username,
-		Message:  "User authorized to authenticate",
-		Attrs: map[string]string{
-			"Auth-Type": "REST",
-			"User-ID":   user.Username,
-			"User-Role": func() string {
-				if user.IsAdmin {
-					return "admin"
-				}
-				return "user"
-			}(),
-		},
+	c.JSON(consts.StatusOK, RadiusAuthorizeResponse{
+		Control: "REST",
 	})
 }
 

@@ -47,7 +47,7 @@ func Connect() error {
 	sqlDB.SetMaxOpenConns(100)
 	sqlDB.SetConnMaxLifetime(time.Hour)
 
-	err = DB.AutoMigrate(&models.User{})
+	err = DB.AutoMigrate(&models.User{}, &models.AuthLog{})
 	if err != nil {
 		return fmt.Errorf("failed to migrate database: %w", err)
 	}
@@ -77,7 +77,7 @@ func createDefaultAdmin() error {
 			Email:    "admin@example.com",
 			Password: "admin123",
 			IsAdmin:  true,
-			Status:   true,
+			Banned:   false,
 		}
 
 		if err := DAO.User.Create(ctx, &admin); err != nil {

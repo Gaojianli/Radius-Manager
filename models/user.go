@@ -16,7 +16,6 @@ type User struct {
 	Salt      string    `json:"-" gorm:"not null"`
 	IsAdmin   bool      `json:"is_admin" gorm:"default:false"`
 	Email     string    `json:"email" gorm:"unique"`
-	Status    bool      `json:"status" gorm:"default:true"`
 	Banned    bool      `json:"banned" gorm:"default:false"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -63,7 +62,6 @@ type UserResponse struct {
 	Username  string    `json:"username"`
 	Email     string    `json:"email"`
 	IsAdmin   bool      `json:"is_admin"`
-	Status    bool      `json:"status"`
 	Banned    bool      `json:"banned"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -75,7 +73,6 @@ func (u *User) ToResponse() UserResponse {
 		Username:  u.Username,
 		Email:     u.Email,
 		IsAdmin:   u.IsAdmin,
-		Status:    u.Status,
 		Banned:    u.Banned,
 		CreatedAt: u.CreatedAt,
 		UpdatedAt: u.UpdatedAt,
