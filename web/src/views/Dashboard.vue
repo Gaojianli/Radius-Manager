@@ -1,9 +1,9 @@
 <template>
   <div class="page-container">
-    <a-page-header title="仪表板" subtitle="系统概览" />
+    <a-page-header title="仪表板" subtitle="系统概览" :show-back="false" />
     
     <a-row :gutter="16" class="mb-24">
-      <a-col :span="6" v-if="authStore.isAdmin">
+      <a-col :xs="12" :sm="12" :md="6" :lg="6" v-if="authStore.isAdmin">
         <a-card class="dashboard-card">
           <a-statistic
             title="总用户数"
@@ -17,7 +17,7 @@
         </a-card>
       </a-col>
       
-      <a-col :span="6" v-if="authStore.isAdmin">
+      <a-col :xs="12" :sm="12" :md="6" :lg="6" v-if="authStore.isAdmin">
         <a-card class="dashboard-card">
           <a-statistic
             title="活跃用户"
@@ -31,7 +31,7 @@
         </a-card>
       </a-col>
       
-      <a-col :span="6" v-if="authStore.isAdmin">
+      <a-col :xs="12" :sm="12" :md="6" :lg="6" v-if="authStore.isAdmin">
         <a-card class="dashboard-card">
           <a-statistic
             title="被封禁用户"
@@ -45,7 +45,7 @@
         </a-card>
       </a-col>
       
-      <a-col :span="6">
+      <a-col :xs="12" :sm="12" :md="6" :lg="6">
         <a-card class="dashboard-card">
           <a-statistic
             title="授权次数"
@@ -62,7 +62,7 @@
     </a-row>
 
     <a-row :gutter="16">
-      <a-col :span="12">
+      <a-col :xs="24" :sm="24" :md="12" :lg="12">
         <a-card title="系统信息" class="mb-16 dashboard-card">
           <a-descriptions :column="1">
             <a-descriptions-item label="系统版本">v1.0.0</a-descriptions-item>
@@ -73,7 +73,7 @@
         </a-card>
       </a-col>
       
-      <a-col :span="12">
+      <a-col :xs="24" :sm="24" :md="12" :lg="12">
         <a-card title="欢迎使用 RADIUS 管理系统" class="dashboard-card">
           <p>您已成功登录 RADIUS 管理系统。本系统提供以下功能：</p>
           <ul>
@@ -151,5 +151,25 @@ onMounted(loadStats)
 .dashboard-card li {
   margin-bottom: 8px;
   line-height: 1.6;
+}
+
+/* 移动端优化 */
+@media (max-width: 768px) {
+  .mb-24 {
+    margin-bottom: 16px !important;
+  }
+  
+  .dashboard-card {
+    margin-bottom: 16px;
+  }
+  
+  .dashboard-card ul {
+    margin: 12px 0;
+  }
+  
+  .dashboard-card li {
+    margin-bottom: 6px;
+    font-size: 14px;
+  }
 }
 </style>

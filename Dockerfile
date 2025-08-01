@@ -1,17 +1,23 @@
 # 前端构建阶段
-FROM node:18-alpine AS frontend-builder
+FROM node:alpine AS frontend-builder
+
+# 安装 pnpm
+RUN corepack enable pnpm
 
 WORKDIR /app/web
 
-# 复制前端文件
-COPY web/package.json web/package-lock.json* ./
-RUN npm ci
+# 复制前端依赖文件
+COPY web/package.json web/pnpm-lock.yaml ./
+# 安装依赖，使用缓存优化
+RUN pnpm install --frozen-lockfile
 
+# 复制前端源代码
 COPY web/ ./
-RUN npm run build
+# 构建前端
+RUN pnpm run build
 
 # 后端构建阶段
-FROM golang:1.21-alpine AS backend-builder
+FROM golang:1.24-alpine AS backend-builder
 
 WORKDIR /app
 
@@ -22,7 +28,7 @@ RUN go mod download
 # 复制源代码
 COPY . .
 # 复制前端构建产物
-COPY --from=frontend-builder /app/static ./static
+COPY --from=frontend-builder /app/web/dist ./static/dist
 
 # 构建后端
 RUN CGO_ENABLED=0 GOOS=linux go build -o radius_mgnt .

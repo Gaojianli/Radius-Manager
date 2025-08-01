@@ -1,8 +1,8 @@
 <template>
   <a-card class="page-container" :bordered="false">
-    <a-page-header title="用户管理" subtitle="管理系统用户">
+    <a-page-header title="用户管理" subtitle="管理系统用户" :show-back="false">
       <template #extra>
-        <a-button type="primary" @click="showCreateModal = true">
+        <a-button type="primary" @click="showCreateModal = true" class="desktop-add-btn">
           <template #icon><icon-plus /></template>
           添加用户
         </a-button>
@@ -83,12 +83,25 @@
       </template>
     </a-table>
 
+    <!-- 移动端悬浮添加按钮 -->
+    <a-button 
+      type="primary" 
+      shape="circle" 
+      size="large"
+      @click="showCreateModal = true"
+      class="mobile-fab"
+    >
+      <template #icon><icon-plus /></template>
+    </a-button>
+
     <!-- 创建用户模态框 -->
     <a-modal
       v-model:visible="showCreateModal"
       title="添加用户"
       @ok="handleCreateUser"
       :confirm-loading="createLoading"
+      class="create-user-modal"
+      :width="400"
     >
       <a-form ref="createFormRef" :model="createForm" :rules="createRules">
         <a-form-item field="username" label="用户名">
@@ -312,5 +325,172 @@ onMounted(() => {
 
 .action-btn:disabled {
   color: #d9d9d9 !important;
+}
+
+/* 悬浮按钮样式 */
+.mobile-fab {
+  display: none;
+  position: fixed !important;
+  bottom: 80px;
+  right: 24px;
+  width: 56px !important;
+  height: 56px !important;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 8px 24px rgba(0, 0, 0, 0.1);
+  border: none !important;
+  transition: all 0.3s ease;
+}
+
+.mobile-fab:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2), 0 12px 32px rgba(0, 0, 0, 0.15);
+}
+
+/* 桌面端添加按钮默认显示 */
+.desktop-add-btn {
+  display: inline-flex;
+}
+
+/* 移动端优化 */
+@media (max-width: 768px) {
+  .page-container {
+    margin: 16px auto;
+    padding: 16px;
+    overflow-x: hidden;
+  }
+  
+  /* 隐藏桌面端添加按钮 */
+  .desktop-add-btn {
+    display: none !important;
+  }
+  
+  /* 显示移动端悬浮按钮 */
+  .mobile-fab {
+    display: inline-flex !important;
+  }
+  
+  /* 在手机端隐藏不重要的列 */
+  :deep(.arco-table-th):nth-child(1),
+  :deep(.arco-table-td):nth-child(1) {
+    display: none; /* 隐藏ID列 */
+  }
+  
+  :deep(.arco-table-th):nth-child(3),
+  :deep(.arco-table-td):nth-child(3) {
+    display: none; /* 隐藏邮箱列 */
+  }
+  
+  :deep(.arco-table-th):nth-child(6),
+  :deep(.arco-table-td):nth-child(6) {
+    display: none; /* 隐藏创建时间列 */
+  }
+  
+  /* 调整剩余列的宽度 */
+  :deep(.arco-table-th):nth-child(2),
+  :deep(.arco-table-td):nth-child(2) {
+    width: 30%; /* 用户名列 - 弹性宽度 */
+    min-width: 80px;
+  }
+  
+  :deep(.arco-table-th):nth-child(4),
+  :deep(.arco-table-td):nth-child(4) {
+    width: 25%; /* 角色列 - 弹性宽度 */
+    min-width: 60px;
+  }
+  
+  :deep(.arco-table-th):nth-child(5),
+  :deep(.arco-table-td):nth-child(5) {
+    width: 25%; /* 封禁状态列 - 弹性宽度 */
+    min-width: 60px;
+  }
+  
+  /* 调整操作列 */
+  :deep(.arco-table-th):last-child,
+  :deep(.arco-table-td):last-child {
+    width: 20% !important;
+    min-width: 90px !important;
+  }
+  
+  /* 表格整体设置 */
+  :deep(.arco-table) {
+    font-size: 14px;
+    min-width: 100%;
+    width: 100%;
+  }
+  
+  :deep(.arco-table-container) {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+  }
+  
+  :deep(.arco-table-tbody),
+  :deep(.arco-table-thead) {
+    width: 100%;
+  }
+  
+  :deep(.arco-table-th) {
+    padding: 8px 4px !important;
+  }
+  
+  :deep(.arco-table-td) {
+    padding: 12px 4px !important;
+  }
+  
+  /* 调整标签样式 */
+  :deep(.arco-tag) {
+    font-size: 12px;
+    padding: 2px 6px;
+  }
+  
+  /* 调整按钮大小 */
+  .action-btn {
+    width: 26px !important;
+    height: 26px !important;
+    margin: 0 2px;
+  }
+  
+  /* 用户名列内容换行 */
+  :deep(.arco-table-td):nth-child(2) {
+    word-break: break-all;
+  }
+  
+  /* 移动端模态框适配 */
+  .create-user-modal :deep(.arco-modal) {
+    width: calc(100vw - 32px) !important;
+    max-width: none !important;
+    margin: 16px !important;
+  }
+  
+  .create-user-modal :deep(.arco-modal-container) {
+    padding: 16px !important;
+  }
+  
+  .create-user-modal :deep(.arco-modal-header) {
+    padding: 16px 20px 12px !important;
+  }
+  
+  .create-user-modal :deep(.arco-modal-body) {
+    padding: 12px 20px 20px !important;
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+  }
+  
+  .create-user-modal :deep(.arco-modal-footer) {
+    padding: 12px 20px 16px !important;
+  }
+  
+  .create-user-modal :deep(.arco-form-item) {
+    margin-bottom: 16px !important;
+  }
+  
+  .create-user-modal :deep(.arco-form-item-label) {
+    font-size: 14px !important;
+  }
+  
+  .create-user-modal :deep(.arco-input),
+  .create-user-modal :deep(.arco-input-password) {
+    font-size: 16px !important; /* 防止iOS缩放 */
+  }
 }
 </style>

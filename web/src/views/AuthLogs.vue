@@ -1,6 +1,6 @@
 <template>
   <a-card class="page-container" :bordered="false">
-    <a-page-header title="认证日志" subtitle="查看系统认证日志记录" />
+    <a-page-header title="认证日志" subtitle="查看系统认证日志记录" :show-back="false" />
     
 
     <!-- 日志表格 -->
@@ -183,5 +183,49 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   gap: 8px;
+}
+
+/* 移动端优化 */
+@media (max-width: 768px) {
+  .page-container {
+    margin: 16px auto;
+    padding: 16px;
+  }
+  
+  /* 在手机端隐藏一些不重要的列 */
+  :deep(.arco-table-th):nth-child(1),
+  :deep(.arco-table-td):nth-child(1) {
+    display: none; /* 隐藏ID列 */
+  }
+  
+  :deep(.arco-table-th):nth-child(5),
+  :deep(.arco-table-td):nth-child(5) {
+    display: none; /* 隐藏IP地址列 */
+  }
+  
+  :deep(.arco-table-th):nth-child(6),
+  :deep(.arco-table-td):nth-child(6) {
+    display: none; /* 隐藏User-Agent列 */
+  }
+  
+  /* 调整表格列宽 */
+  :deep(.arco-table-th):nth-child(2),
+  :deep(.arco-table-td):nth-child(2) {
+    min-width: 100px; /* 用户名列 */
+  }
+  
+  :deep(.arco-table-th):nth-child(7),
+  :deep(.arco-table-td):nth-child(7) {
+    min-width: 140px; /* 时间列 */
+  }
+  
+  /* 表格横向滚动 */
+  :deep(.arco-table-container) {
+    overflow-x: auto;
+  }
+  
+  .user-agent-cell {
+    max-width: 150px;
+  }
 }
 </style>

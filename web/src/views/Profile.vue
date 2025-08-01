@@ -1,9 +1,9 @@
 <template>
   <div class="page-container">
-    <a-page-header title="个人资料" subtitle="管理您的账户信息" />
+    <a-page-header title="个人资料" subtitle="管理您的账户信息" :show-back="false" />
     
     <a-row :gutter="24">
-      <a-col :span="8">
+      <a-col :xs="24" :sm="24" :md="8" :lg="8">
         <a-card title="基本信息" class="profile-card">
           <a-descriptions :column="1" v-if="authStore.user">
             <a-descriptions-item label="用户名">
@@ -32,8 +32,22 @@
         </a-card>
       </a-col>
       
-      <a-col :span="16">
+      <a-col :xs="24" :sm="24" :md="16" :lg="16">
         <a-card title="修改密码" class="profile-card">
+          <a-alert type="info" show-icon class="security-tips">
+            <template #icon><icon-info-circle /></template>
+            <div>
+              <h4>密码安全建议：</h4>
+              <ul>
+                <li>密码长度至少6个字符</li>
+                <li>包含字母、数字和特殊字符</li>
+                <li>避免使用常见密码</li>
+                <li>定期更换密码</li>
+                <li>不要在多个系统中使用相同密码</li>
+              </ul>
+            </div>
+          </a-alert>
+          
           <a-form
             ref="passwordFormRef"
             :model="passwordForm"
@@ -72,22 +86,6 @@
               </a-button>
             </a-form-item>
           </a-form>
-        </a-card>
-        
-        <a-card title="安全提示" class="security-tips profile-card">
-          <a-alert type="info" show-icon>
-            <template #icon><icon-info-circle /></template>
-            <div>
-              <h4>密码安全建议：</h4>
-              <ul>
-                <li>密码长度至少6个字符</li>
-                <li>包含字母、数字和特殊字符</li>
-                <li>避免使用常见密码</li>
-                <li>定期更换密码</li>
-                <li>不要在多个系统中使用相同密码</li>
-              </ul>
-            </div>
-          </a-alert>
         </a-card>
       </a-col>
     </a-row>
@@ -174,13 +172,14 @@ const formatDate = (dateString: string) => {
 </script>
 
 <style scoped>
+
 .profile-card {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
 }
 
 .security-tips {
-  margin-top: 24px;
+  margin-bottom: 24px;
 }
 
 .security-tips ul {
@@ -195,5 +194,26 @@ const formatDate = (dateString: string) => {
 .security-tips h4 {
   margin: 0 0 8px 0;
   font-size: 14px;
+}
+
+/* 移动端优化 */
+@media (max-width: 768px) {
+  .page-container {
+    margin: 16px auto;
+    padding: 16px;
+    min-height: calc(100vh - 80px);
+  }
+  
+  .profile-card {
+    margin-bottom: 16px;
+  }
+  
+  .security-tips ul {
+    padding-left: 20px;
+  }
+  
+  .security-tips li {
+    font-size: 14px;
+  }
 }
 </style>

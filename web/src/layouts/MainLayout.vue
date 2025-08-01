@@ -2,14 +2,15 @@
   <a-layout class="layout-container">
     <a-layout-sider
       class="layout-sider"
-      breakpoint="lg"
+      breakpoint="md"
       :collapsed="collapsed"
       :collapsible="true"
+      :collapsed-width="0"
       @collapse="onCollapse"
     >
       <div class="logo">
         <h3 v-if="!collapsed">RADIUS 管理</h3>
-        <h3 v-else>R</h3>
+        <h3 v-else">R</h3>
       </div>
       
       <a-menu
@@ -39,19 +40,30 @@
       </a-menu>
     </a-layout-sider>
     
+    <!-- 移动端遮罩层 -->
+    <transition name="overlay-fade">
+      <div 
+        v-if="isMobile && !collapsed" 
+        class="mobile-overlay"
+        @click="collapsed = true"
+      ></div>
+    </transition>
+    
     <a-layout>
-      <a-layout-header class="layout-header">
+      <a-layout-header :class="['layout-header', { collapsed }]">
         <div class="header-left">
           <a-button
             type="text"
             size="small"
             @click="collapsed = !collapsed"
+            class="mobile-menu-btn"
+            v-if="isMobile"
           >
             <template #icon>
-              <icon-menu-unfold v-if="collapsed" />
-              <icon-menu-fold v-else />
+              <icon-menu />
             </template>
           </a-button>
+          <h2 class="header-title">Radius Manager</h2>
         </div>
         
         <div class="header-right">
@@ -75,7 +87,7 @@
         </div>
       </a-layout-header>
       
-      <a-layout-content class="layout-content">
+      <a-layout-content :class="['layout-content', { collapsed }]">
         <router-view />
       </a-layout-content>
     </a-layout>
@@ -83,7 +95,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Modal, Message } from '@arco-design/web-vue'
 import {
@@ -94,7 +106,8 @@ import {
   IconMenuUnfold,
   IconDown,
   IconExport,
-  IconHistory
+  IconHistory,
+  IconMenu
 } from '@arco-design/web-vue/es/icon'
 import { useAuthStore } from '@/stores/auth'
 
@@ -103,6 +116,21 @@ const router = useRouter()
 const authStore = useAuthStore()
 
 const collapsed = ref(false)
+const isMobile = ref(false)
+
+// 检测是否为移动端
+const checkMobile = () => {
+  isMobile.value = window.innerWidth < 768
+  // 移动端默认折叠侧边栏
+  if (isMobile.value) {
+    collapsed.value = true
+  }
+}
+
+// 监听窗口大小变化
+const handleResize = () => {
+  checkMobile()
+}
 
 const onCollapse = (val: boolean) => {
   collapsed.value = val
@@ -110,6 +138,10 @@ const onCollapse = (val: boolean) => {
 
 const onMenuClick = (key: string) => {
   router.push({ name: key })
+  // 手机端点击菜单项后自动收起侧边栏
+  if (isMobile.value) {
+    collapsed.value = true
+  }
 }
 
 const onUserMenuSelect = (value: string) => {
@@ -134,6 +166,15 @@ onMounted(async () => {
   } catch (error) {
     router.push('/login')
   }
+  
+  // 初始化移动端检测
+  checkMobile()
+  window.addEventListener('resize', handleResize)
+})
+
+// 组件卸载时移除事件监听
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
 })
 </script>
 
@@ -167,6 +208,8 @@ onMounted(async () => {
   font-weight: 600;
 }
 
+
+
 .layout-header {
   position: fixed;
   top: 0;
@@ -193,6 +236,7 @@ onMounted(async () => {
   align-items: center;
 }
 
+
 .layout-content {
   margin-left: 200px;
   margin-top: 64px;
@@ -200,17 +244,93 @@ onMounted(async () => {
   transition: margin-left 0.2s ease;
   min-height: calc(100vh - 64px);
   background: #f5f5f5;
+  overflow-y: auto;
 }
 
 .layout-content.collapsed {
   margin-left: 48px;
 }
 
-:deep(.arco-layout-sider-collapsed .layout-content) {
-  margin-left: 48px;
+.mobile-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: none;
 }
 
-:deep(.arco-layout-sider-collapsed + .arco-layout .layout-header) {
-  left: 48px;
+/* 遮罩层过渡动画 */
+.overlay-fade-enter-active,
+.overlay-fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.overlay-fade-enter-from,
+.overlay-fade-leave-to {
+  opacity: 0;
+}
+
+.mobile-menu-btn {
+  margin-right: 8px;
+}
+
+.header-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1d2129;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .layout-sider {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    height: 100vh !important;
+    z-index: 1002 !important;
+  }
+
+  .layout-header {
+    left: 0 !important;
+    padding: 0 16px !important;
+  }
+
+  .layout-header.collapsed {
+    left: 0 !important;
+  }
+
+  .layout-content {
+    margin-left: 0 !important;
+    padding: 16px !important;
+    min-height: calc(100vh - 64px) !important;
+  }
+
+  .layout-content.collapsed {
+    margin-left: 0 !important;
+  }
+
+  .header-title {
+    font-size: 16px !important;
+  }
+  
+  /* 移动端侧边栏折叠时完全隐藏 */
+  .layout-container :deep(.arco-layout-sider-collapsed) {
+    width: 0 !important;
+    min-width: 0 !important;
+  }
+  
+  /* 移动端显示遮罩层 */
+  .mobile-overlay {
+    display: block !important;
+  }
+  
+  /* 隐藏移动端的侧边栏折叠按钮 */
+  .layout-sider :deep(.arco-layout-sider-trigger) {
+    display: none !important;
+  }
 }
 </style>

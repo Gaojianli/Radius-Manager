@@ -49,10 +49,6 @@
         </a-form-item>
       </a-form>
       
-      <div class="login-footer">
-        <a-divider />
-        <p>默认管理员账户：admin / admin123</p>
-      </div>
     </a-card>
   </div>
 </template>
@@ -150,15 +146,6 @@ const handleSubmit = async (data: { errors?: any; values: any }) => {
   font-size: 14px;
 }
 
-.login-footer {
-  text-align: center;
-}
-
-.login-footer p {
-  color: #86909c;
-  font-size: 12px;
-  margin: 16px 0 0 0;
-}
 
 :deep(.arco-card-body) {
   padding: 32px;

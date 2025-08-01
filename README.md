@@ -1,128 +1,164 @@
-# RADIUS 管理系统
+# 🌐 RADIUS Manager
 
-基于 Hertz 框架和 GORM 构建的全栈 RADIUS 用户管理系统，为 FreeRADIUS 提供用户认证服务，配备现代化 Vue3 前端界面。
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Go Version](https://img.shields.io/badge/Go-1.23+-blue.svg)](https://golang.org/)
+[![Vue Version](https://img.shields.io/badge/Vue-3.4+-green.svg)](https://vuejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.3+-blue.svg)](https://www.typescriptlang.org/)
 
-## 功能特性
+A modern RADIUS user management system built with **CloudWeGo Hertz** and **Vue 3**. Provides complete user authentication, authorization, and management features for FreeRADIUS with a responsive web interface.
 
-### 🖥️ **Web 管理界面**
-- ✅ 现代化 Vue3 + Arco Design 前端界面
-- ✅ 响应式设计，支持移动端
-- ✅ 直观的用户管理界面
-- ✅ 实时数据展示和操作反馈
+[中文文档](./README.CN.md)
 
-### 🚀 **后端功能**
-- ✅ 用户登录、密码管理
-- ✅ 管理员创建、删除用户
-- ✅ 管理员可以修改所有用户密码（无法查看密码）
-- ✅ 用户封禁/解封功能
-- ✅ 基于 SHA256+Salt 的安全密码存储
-- ✅ JWT 认证和权限管理
-- ✅ RESTful API 接口
-- ✅ FreeRADIUS 认证集成
-- ✅ Docker 容器化部署
+## ✨ Project Highlights
 
-## 技术栈
+- 🎨 **Modern UI**: Responsive interface based on Arco Design, perfect support for desktop and mobile
+- 🔐 **Security & Reliability**: SHA256+Salt password encryption, JWT authentication, role-based access control
+- ⚡ **High Performance**: CloudWeGo Hertz high-performance framework with concurrent processing support
+- 🌍 **Standard Compatible**: Fully compatible with FreeRADIUS authentication flow and RADIUS protocol
+- 📦 **Containerized Deployment**: Docker Compose one-click deployment, ready to use out of the box
+- 📱 **Mobile Friendly**: Complete mobile adaptation with touch operations and responsive layout
 
-### 前端
-- **框架**: Vue 3 + TypeScript
-- **UI库**: Arco Design
-- **状态管理**: Pinia
-- **路由**: Vue Router
-- **HTTP客户端**: Axios
-- **构建工具**: Vite
+## 🚀 Features
 
-### 后端
-- **框架**: CloudWeGo Hertz
-- **数据库**: MySQL 8.0
-- **ORM**: GORM
-- **认证**: JWT
-- **密码加密**: SHA256+Salt
-- **容器化**: Docker & Docker Compose
+### 🖥️ **Modern Web Management Interface**
+- ✨ Built with Vue 3 + TypeScript + Arco Design for modern interface
+- 📱 Complete mobile adaptation with touch operations and responsive layout
+- 🎨 Intuitive and user-friendly interface, simple and easy to understand
+- ⚡ Real-time data display and operation feedback with hot updates
 
-## 快速开始
+### 🔧 **Powerful Backend Features**
+- 🔐 Secure user authentication and password management system
+- 👥 Complete user lifecycle management (create, edit, ban, delete)
+- 🛡️ Role-based fine-grained permission control system
+- 🔒 SHA256+Salt password encryption following security best practices
+- 🎯 JWT stateless authentication supporting distributed deployment
+- 🔌 RESTful API design, easy to integrate and extend
+- 📊 Detailed authentication logs and statistical analysis
+- 🌐 Fully compatible with FreeRADIUS authentication flow
+- 📦 Docker Compose one-click deployment supporting containerized environments
 
-### 📦 使用 Docker Compose (推荐)
+## 💻 Tech Stack
 
-1. 克隆项目并进入目录
+### 🎨 Frontend Tech Stack
+- **Core Framework**: Vue 3.4+ + TypeScript 5.3+
+- **UI Component Library**: Arco Design 2.56+ (officially recommended enterprise-level component library)
+- **State Management**: Pinia (next-generation Vuex)
+- **Router Management**: Vue Router 4.2+
+- **HTTP Requests**: Axios 1.6+ (supports interceptors and automatic retry)
+- **Development Tools**: Vite 5.0+ (lightning-fast hot reload and building)
+- **Code Quality**: TypeScript type checking + Unplugin auto-import
+
+### ⚙️ Backend Tech Stack
+- **High-Performance Framework**: CloudWeGo Hertz 0.10+ (ByteDance's open-source enterprise-level framework)
+- **Data Storage**: MySQL 8.0+ (supports transactions and concurrency control)
+- **ORM Framework**: GORM 1.30+ (powerful Go ORM)
+- **Authentication & Authorization**: JWT (HMAC-SHA256 signature + automatic expiration refresh)
+- **Password Security**: SHA256 + 32-byte random salt encryption
+- **Deployment**: Docker & Docker Compose + Makefile automation
+- **Cross-Origin Support**: CORS middleware + RESTful API design
+
+## 🚀 Quick Start
+
+### 📦 Using Docker Compose (Recommended)
+
+1. Clone the project and navigate to directory
 ```bash
-git clone <repository-url>
-cd radius_mgnt
+git clone https://github.com/Gaojianli/radius-manager.git
+cd radius-manager
 ```
 
-2. 启动服务
+2. Start services
 ```bash
 make docker-run
 ```
 
-3. 访问 Web 界面
-- 管理界面: http://localhost:8080
-- API文档: http://localhost:8080/api/v1
+3. Access web interface
+- Management UI: http://localhost:8080
+- API Documentation: http://localhost:8080/api/v1
 
-默认管理员账户：
-- 用户名: `admin`
-- 密码: `admin123`
+Default admin account:
+- Username: `admin`
+- Password: `admin123`
 
-### 🛠️ 开发环境搭建
+### 🛠️ Development Environment Setup
 
-1. 安装依赖
+1. Install dependencies
 ```bash
 make install
 ```
 
-2. 配置环境变量
+2. Configure environment variables
 ```bash
 cp .env.example .env
-# 编辑 .env 文件，设置数据库连接信息
+# Edit .env file to set database connection information
 ```
 
-3. 启动数据库 (如果使用 Docker)
+3. Start database (if using Docker)
 ```bash
 docker-compose up -d mysql
 ```
 
-4. 构建并运行
+4. Build and run
 ```bash
-# 构建前端
+# Build frontend
 make build-frontend
 
-# 运行完整应用
+# Run complete application
 make run
 
-# 或者分别启动前后端进行开发
-make dev-frontend  # 启动前端开发服务器 (端口 3000)
-make dev-backend   # 启动后端开发服务器 (端口 8080)
+# Or start frontend and backend separately for development
+make dev-frontend  # Start frontend dev server (port 3000)
+make dev-backend   # Start backend dev server (port 8080)
 ```
 
-## 🎯 Web 界面功能
+## 🎯 Web Interface Features
 
-### 登录页面
-- 安全的用户认证
-- 友好的错误提示
-- 记住登录状态
+### 📱 Mobile Optimization
+- **Responsive Design**: Adaptive to desktop, tablet, and mobile screens
+- **Touch Optimization**: Support for touch gestures, click feedback, and swipe operations
+- **Mobile Navigation**: Sidebar overlay design with gesture control and mask layer
+- **Mobile Tables**: Smart column hiding, horizontal scrolling, and touch optimization
+- **Floating Actions**: FAB (Floating Action Button) design following Material Design guidelines
+- **Modal Adaptation**: Mobile modal auto-adapts to screen size
 
-### 仪表板
-- 系统概览和统计信息
-- 快速操作入口
-- 欢迎和帮助信息
+### 🔑 Login Page
+- 🔒 Secure user authentication and session management
+- ❌ Friendly error messages and form validation
+- 💾 Automatic login state persistence with auto-login support
+- 📱 Perfect mobile adaptation and touch optimization
 
-### 用户管理 (管理员)
-- 📊 用户列表和分页
-- ➕ 创建新用户
-- 🔐 重置用户密码
-- 🚫 封禁/解封用户
-- 🗑️ 删除用户
-- 📋 用户状态管理
+### 📊 Dashboard
+- 📈 Real-time system statistics and data visualization
+- 👥 User activity and authorization statistics (supports display by role)
+- ⚙️ System information and version display
+- 🎨 Responsive card layout adapting to screen size
 
-### 个人资料
-- 查看个人信息
-- 修改登录密码
-- 安全设置提示
+### 👥 User Management (Admin)
+- 📋 Paginated user list with search and filtering support
+- ➕ Visual user creation form with real-time validation
+- 🔐 One-click user password reset (admin cannot see passwords)
+- 🚫 Flexible user ban/unban functionality
+- 🗑️ Safe user deletion (with confirmation dialogs)
+- 🏷️ Real-time user status indicators and role management
+- 🚀 Mobile FAB floating button supporting manual operations
 
-## 📡 API 接口文档
+### 👤 User Profile
+- 🗺️ Detailed personal information display (username, email, role, status)
+- 🔐 Secure password modification with password strength checking
+- 🛡️ Built-in security tips and password security recommendations
+- 📅 Creation time and update time tracking
 
-### 认证相关
+### 📋 Authentication Logs (Admin)
+- 📊 Detailed authentication log records and analysis
+- 🔍 Support for filtering and searching by username
+- 📅 Time range queries and sorting
+- 📱 Mobile-adapted table display
 
-#### 用户登录
+## 📡 API Documentation
+
+### Authentication
+
+#### User Login
 ```http
 POST /api/v1/auth/login
 Content-Type: application/json
@@ -133,7 +169,7 @@ Content-Type: application/json
 }
 ```
 
-响应：
+Response:
 ```json
 {
   "code": 200,
@@ -142,21 +178,21 @@ Content-Type: application/json
 }
 ```
 
-#### 刷新 Token
+#### Refresh Token
 ```http
 POST /api/v1/auth/refresh
 Authorization: Bearer <token>
 ```
 
-### 用户管理
+### User Management
 
-#### 获取个人信息
+#### Get User Profile
 ```http
 GET /api/v1/user/profile
 Authorization: Bearer <token>
 ```
 
-#### 修改密码
+#### Change Password
 ```http
 PUT /api/v1/user/change-password
 Authorization: Bearer <token>
@@ -168,9 +204,9 @@ Content-Type: application/json
 }
 ```
 
-### 管理员功能
+### Admin Functions
 
-#### 创建用户
+#### Create User
 ```http
 POST /api/v1/admin/users
 Authorization: Bearer <admin-token>
@@ -184,65 +220,30 @@ Content-Type: application/json
 }
 ```
 
-#### 获取所有用户列表
+#### Get All Users
 ```http
 GET /api/v1/admin/users?page=1&limit=20
 Authorization: Bearer <admin-token>
 ```
 
-#### 管理员修改用户密码
-```http
-PUT /api/v1/admin/users/{user_id}/password
-Authorization: Bearer <admin-token>
-Content-Type: application/json
-
-{
-  "new_password": "newpass123"
-}
-```
-
-#### 启用/禁用用户
-```http
-PUT /api/v1/admin/users/{user_id}/status
-Authorization: Bearer <admin-token>
-```
-
-#### 封禁/解封用户
+#### Ban/Unban User
 ```http
 PUT /api/v1/admin/users/{user_id}/ban
 Authorization: Bearer <admin-token>
 ```
 
-响应：
-```json
-{
-  "code": 200,
-  "message": "User banned successfully",
-  "data": {
-    "id": 2,
-    "username": "testuser",
-    "email": "test@example.com",
-    "is_admin": false,
-    "status": true,
-    "banned": true,
-    "created_at": "2024-01-01T10:00:00Z",
-    "updated_at": "2024-01-01T12:00:00Z"
-  }
-}
-```
-
-#### 删除用户
+#### Delete User
 ```http
 DELETE /api/v1/admin/users/{user_id}
 Authorization: Bearer <admin-token>
 ```
 
-### FreeRADIUS 接口
+### FreeRADIUS Integration
 
-FreeRADIUS 集成采用标准的 Authorize → Authenticate 两阶段验证流程：
+FreeRADIUS integration uses the standard Authorize → Authenticate two-phase verification process:
 
-#### 授权接口（Authorization）
-用于检查用户是否有权限进行认证，不验证密码。
+#### Authorization Interface
+Used to check if a user is authorized to authenticate, without password verification.
 
 ```http
 POST /api/v1/radius/authorize
@@ -253,7 +254,7 @@ Content-Type: application/json
 }
 ```
 
-响应：
+Response:
 ```json
 {
   "result": "accept",
@@ -267,8 +268,8 @@ Content-Type: application/json
 }
 ```
 
-#### 认证接口（Authentication）
-用于验证用户凭据（用户名和密码）。
+#### Authentication Interface
+Used to verify user credentials (username and password).
 
 ```http
 POST /api/v1/radius/auth
@@ -280,7 +281,7 @@ Content-Type: application/json
 }
 ```
 
-响应：
+Response:
 ```json
 {
   "result": "accept",
@@ -294,336 +295,217 @@ Content-Type: application/json
 }
 ```
 
-#### 计费接口
-```http
-POST /api/v1/radius/accounting
-Content-Type: application/json
+## 🔧 FreeRADIUS Integration
 
-{
-  "username": "testuser",
-  "acct_type": "start",
-  "session_id": "session123",
-  "session_time": "3600",
-  "input_octets": "1024000",
-  "output_octets": "2048000"
-}
-```
+### Two-Phase Verification Process
 
-## 🔧 FreeRADIUS 集成原理
+FreeRADIUS uses a two-phase verification mode to ensure security and performance:
 
-### 两阶段验证流程
+1. **Authorize Phase**
+   - Check if user exists
+   - Verify account status (disabled, banned)
+   - Set authentication type
+   - **No password verification**, quickly filter invalid users
 
-FreeRADIUS 采用两阶段验证模式，确保安全性和性能：
+2. **Authenticate Phase**
+   - Verify user credentials (password)
+   - Only execute for users who pass authorization
+   - Return final authentication result
 
-1. **Authorize 阶段（授权）**
-   - 检查用户是否存在
-   - 验证账户状态（是否被禁用、封禁）
-   - 设置认证类型
-   - **不验证密码**，快速筛选无效用户
+### Advantages
 
-2. **Authenticate 阶段（认证）**
-   - 验证用户凭据（密码）
-   - 只对通过授权的用户执行
-   - 返回最终认证结果
+- **Performance Optimization**: Invalid users are blocked in authorization phase, reducing password verification overhead
+- **Security Enhancement**: Banned users cannot enter authentication phase
+- **Standard Compliant**: Follows RADIUS protocol design philosophy
+- **Easy to Monitor**: Can separately track authorization and authentication success/failure rates
 
-### 优势
+## 📋 Environment Variables
 
-- **性能优化**：无效用户在授权阶段被拦截，减少密码验证开销
-- **安全增强**：被封禁用户无法进入认证阶段
-- **符合标准**：遵循 RADIUS 协议设计理念
-- **易于监控**：可以分别统计授权和认证的成功/失败率
+| Variable | Default | Description |
+|----------|---------|-------------|
+| DB_HOST | localhost | MySQL host address |
+| DB_PORT | 3306 | MySQL port |
+| DB_USER | root | MySQL username |
+| DB_PASSWORD | - | MySQL password |
+| DB_NAME | radius_mgnt | Database name |
+| JWT_SECRET | your-secret-key | JWT signing key |
+| SERVER_PORT | :8080 | Server port |
 
-## FreeRADIUS 配置
+## 🔒 Security Features
 
-### 1. 安装 FreeRADIUS
+- **Password Encryption**: SHA256 + 32-byte random salt
+- **JWT Authentication**: HMAC-SHA256 signature
+- **Access Control**: Role-based access control
+- **Password Policy**: Minimum 6 characters
+- **API Security**: All sensitive operations require authentication
+- **Frontend Route Guards**: Unauthenticated users auto-redirect to login
+- **Auto Login Expiration**: Auto logout on token expiration
 
-#### Ubuntu/Debian:
-```bash
-sudo apt update
-sudo apt install freeradius freeradius-utils
-```
-
-#### CentOS/RHEL:
-```bash
-sudo yum install freeradius freeradius-utils
-```
-
-### 2. 配置 REST 模块
-
-编辑 `/etc/freeradius/3.0/mods-available/rest`:
+## 🏗️ Project Structure
 
 ```
-rest {
-    tls {
-    }
-    
-    connect_uri = "http://localhost:8080"
-    
-    # 授权阶段：检查用户状态，设置认证类型
-    authorize {
-        uri = "${..connect_uri}/api/v1/radius/authorize"
-        method = 'post'
-        body = 'json'
-        data = '{
-            "username": "%{User-Name}"
-        }'
-        tls = ${..tls}
-    }
-    
-    # 认证阶段：验证用户密码
-    authenticate {
-        uri = "${..connect_uri}/api/v1/radius/auth"
-        method = 'post'
-        body = 'json'
-        data = '{
-            "username": "%{User-Name}",
-            "password": "%{User-Password}"
-        }'
-        tls = ${..tls}
-    }
-    
-    accounting {
-        uri = "${..connect_uri}/api/v1/radius/accounting"
-        method = 'post'
-        body = 'json'
-        data = '{
-            "username": "%{User-Name}",
-            "acct_type": "%{Acct-Status-Type}",
-            "session_id": "%{Acct-Session-Id}",
-            "session_time": "%{Acct-Session-Time}",
-            "input_octets": "%{Acct-Input-Octets}",
-            "output_octets": "%{Acct-Output-Octets}"
-        }'
-        tls = ${..tls}
-    }
-    
-    pool {
-        start = ${thread[pool].start_servers}
-        min = ${thread[pool].min_spare_servers}
-        max = ${thread[pool].max_servers}
-        spare = ${thread[pool].max_spare_servers}
-        uses = 0
-        retry_delay = 30
-        lifetime = 0
-        idle_timeout = 60
-    }
-}
-```
-
-### 3. 启用 REST 模块
-
-```bash
-sudo ln -s /etc/freeradius/3.0/mods-available/rest /etc/freeradius/3.0/mods-enabled/
-```
-
-### 4. 配置站点
-
-编辑 `/etc/freeradius/3.0/sites-available/default`:
-
-在 `authorize` 段落中添加：
-```
-authorize {
-    # 其他配置...
-    rest
-    if (ok) {
-        update control {
-            Auth-Type := rest
-        }
-    }
-}
-```
-
-在 `authenticate` 段落中添加：
-```
-authenticate {
-    # 其他配置...
-    Auth-Type rest{
-		rest
-		if(control:Auth-Type == "Accept"){
-			ok
-		}
-	}
-}
-```
-
-在 `accounting` 段落中添加：
-```
-accounting {
-    # 其他配置...
-    rest
-}
-```
-
-### 5. 启动 FreeRADIUS
-
-```bash
-# 测试配置
-sudo freeradius -X
-
-# 启动服务
-sudo systemctl enable freeradius
-sudo systemctl start freeradius
-```
-
-### 6. 测试认证
-
-使用 radtest 工具测试：
-```bash
-radtest testuser password123 localhost 0 testing123
-```
-
-## 📋 环境变量配置
-
-| 变量名 | 默认值 | 描述 |
-|--------|--------|------|
-| DB_HOST | localhost | MySQL 主机地址 |
-| DB_PORT | 3306 | MySQL 端口 |
-| DB_USER | root | MySQL 用户名 |
-| DB_PASSWORD | - | MySQL 密码 |
-| DB_NAME | radius_mgnt | 数据库名 |
-| JWT_SECRET | your-secret-key | JWT 签名密钥 |
-| SERVER_PORT | :8080 | 服务器端口 |
-
-## 🔒 安全特性
-
-- **密码加密**: 使用 SHA256 + 32字节随机盐
-- **JWT 认证**: 使用 HMAC-SHA256 签名
-- **权限控制**: 基于角色的访问控制
-- **密码策略**: 最少6位字符
-- **API 安全**: 所有敏感操作需要认证
-- **前端路由守卫**: 未认证用户自动跳转登录页
-- **自动登录过期**: Token过期自动退出
-
-## 🏗️ 项目结构
-
-```
-radius_mgnt/
-├── web/                    # Vue3 前端项目
+radius-manager/
+├── web/                    # Vue3 frontend project
 │   ├── src/
-│   │   ├── components/     # 可复用组件
-│   │   ├── views/          # 页面组件
-│   │   ├── layouts/        # 布局组件
-│   │   ├── stores/         # Pinia状态管理
-│   │   ├── services/       # API服务
-│   │   └── router/         # 路由配置
+│   │   ├── components/     # Reusable components
+│   │   ├── views/          # Page components
+│   │   ├── layouts/        # Layout components
+│   │   ├── stores/         # Pinia state management
+│   │   ├── services/       # API services
+│   │   └── router/         # Router configuration
 │   ├── package.json
 │   └── vite.config.ts
-├── static/                 # 静态文件服务
-│   ├── dist/               # 前端构建产物
-│   └── static.go           # Go embed静态文件
-├── config/                 # 配置文件
-├── controllers/            # 控制器
-├── dao/                    # 数据访问层
-├── database/               # 数据库连接
-├── middleware/             # 中间件
-├── models/                 # 数据模型
-├── routes/                 # 路由配置
-├── scripts/                # 构建脚本
-├── docker-compose.yml      # Docker编排
-├── Dockerfile              # 容器构建
-├── Makefile               # 构建命令
-└── README.md              # 项目文档
+├── static/                 # Static file server
+│   ├── dist/               # Frontend build output
+│   └── static.go           # Go embed static files
+├── config/                 # Configuration files
+├── controllers/            # Controllers
+├── dao/                    # Data access layer
+├── database/               # Database connection
+├── middleware/             # Middlewares
+├── models/                 # Data models
+├── routes/                 # Route configuration
+├── scripts/                # Build scripts
+├── docker-compose.yml      # Docker orchestration
+├── Dockerfile              # Container build
+├── Makefile               # Build commands
+└── README.md              # Project documentation
 ```
 
-## 🚀 开发指南
-
-### 前端开发
+## 🛠️ Development Commands
 
 ```bash
-# 进入前端目录
-cd web
-
-# 安装依赖
-npm install
-
-# 启动开发服务器 (带热重载)
-npm run dev
-
-# 构建生产版本
-npm run build
+make help              # Show all available commands
+make install          # Install frontend and backend dependencies
+make build            # Build entire project
+make build-frontend   # Build frontend only
+make build-backend    # Build backend only
+make run              # Build and run project
+make dev-frontend     # Start frontend dev server
+make dev-backend      # Start backend dev server
+make clean            # Clean build files
+make docker-build     # Build Docker image
+make docker-run       # Start with Docker Compose
+make test             # Run tests
+make format           # Format code
+make lint             # Code linting
 ```
 
-### 后端开发
+## 🐛 Troubleshooting
 
-```bash
-# 运行后端服务
-go run .
+### Frontend Won't Load
 
-# 或使用 make 命令
-make dev-backend
+1. Ensure frontend is built: `make build-frontend`
+2. Check if `static/dist/` directory has files
+3. Confirm server port configuration is correct
+
+### API Request Failures
+
+1. Check if backend service is running on correct port
+2. Verify JWT token is valid
+3. Check browser network panel for error messages
+
+### Database Connection Issues
+
+1. Confirm MySQL service status
+2. Check database configuration in `.env` file
+3. Verify database user permissions
+
+### FreeRADIUS Authentication Failures
+
+1. Check REST module configuration is correct
+2. Verify API endpoint accessibility
+3. View FreeRADIUS debug output: `sudo freeradius -X`
+
+## 🤝 Contributing
+
+We welcome contributions of all kinds! Whether it's bug reports, feature requests, documentation improvements, or code contributions.
+
+### 📋 Contribution Process
+
+1. **Fork the project**: Click the Fork button in the top right
+2. **Clone locally**: `git clone https://github.com/YOUR_USERNAME/radius-manager.git`
+3. **Create feature branch**: `git checkout -b feature/amazing-feature`
+4. **Local development**:
+   ```bash
+   # Install dependencies
+   make install
+   
+   # Start development environment
+   make dev-frontend    # Frontend dev server
+   make dev-backend     # Backend dev server
+   ```
+5. **Code standards**:
+   ```bash
+   make format         # Format code
+   make lint          # Code linting
+   make test          # Run tests
+   ```
+6. **Commit changes**:
+   ```bash
+   git add .
+   git commit -m "✨ Add amazing feature: feature description"
+   git push origin feature/amazing-feature
+   ```
+7. **Create Pull Request**: Go back to GitHub to create PR
+
+### 🎯 Contribution Types
+
+- 🐛 **Bug Fixes**: Fix issues with existing functionality
+- ✨ **New Features**: Add new features
+- 📚 **Documentation**: Improve documentation and instructions
+- 🎨 **UI/UX**: Interface and user experience improvements
+- ⚡ **Performance**: Performance optimization and improvements
+- 🔧 **Refactoring**: Code refactoring and architecture optimization
+
+### 📝 Code Standards
+
+- **Go Code**: Follow `gofmt` and `golint` standards
+- **Vue Code**: Use TypeScript and Vue 3 Composition API style
+- **Commit Messages**: Use [Conventional Commits](https://www.conventionalcommits.org/) format
+- **Documentation**: All public APIs must have corresponding documentation
+
+## 🌟 Acknowledgments
+
+Thanks to all developers who contributed to this project!
+
+## 📄 License
+
+This project is licensed under the [MIT License](https://opensource.org/licenses/MIT).
+
 ```
-
-### 添加新的 API 接口
-
-1. 在 `controllers/` 目录下创建控制器
-2. 在 `routes/routes.go` 中添加路由
-3. 如需数据库操作，在 `dao/` 中添加数据访问方法
-4. 在 `models/` 中定义数据模型
-
-### 添加新的前端页面
-
-1. 在 `web/src/views/` 中创建页面组件
-2. 在 `web/src/router/index.ts` 中添加路由
-3. 在 `web/src/services/api.ts` 中添加API调用
-4. 根据需要更新状态管理
-
-## 🛠️ 可用命令
-
-```bash
-make help              # 显示所有可用命令
-make install          # 安装前后端依赖
-make build            # 构建整个项目
-make build-frontend   # 只构建前端
-make build-backend    # 只构建后端
-make run              # 构建并运行项目
-make dev-frontend     # 启动前端开发服务器
-make dev-backend      # 启动后端开发服务器
-make clean            # 清理构建文件
-make docker-build     # 构建Docker镜像
-make docker-run       # 使用Docker Compose启动
-make test             # 运行测试
-make format           # 格式化代码
-make lint             # 代码规范检查
-```
-
-## 🐛 故障排除
-
-### 前端无法加载
-
-1. 确保前端已构建：`make build-frontend`
-2. 检查 `static/dist/` 目录是否有文件
-3. 确认服务器端口配置正确
-
-### API 请求失败
-
-1. 检查后端服务是否运行在正确端口
-2. 验证 JWT Token 是否有效
-3. 查看浏览器网络面板的错误信息
-
-### 数据库连接问题
-
-1. 确认 MySQL 服务运行状态
-2. 检查 `.env` 文件中的数据库配置
-3. 验证数据库用户权限
-
-### FreeRADIUS 认证失败
-
-1. 检查 REST 模块配置是否正确
-2. 验证 API 端点可访问性
-3. 查看 FreeRADIUS 调试输出：`sudo freeradius -X`
-
-## 🤝 贡献指南
-
-1. Fork 项目
-2. 创建功能分支：`git checkout -b feature/your-feature`
-3. 提交更改：`git commit -am 'Add some feature'`
-4. 推送到分支：`git push origin feature/your-feature`
-5. 创建 Pull Request
-
-## 📄 许可证
-
 MIT License
 
-## 📞 联系方式
+Copyright (c) 2024 RADIUS Manager Contributors
 
-如有问题或建议，请提交 Issue 或 Pull Request。
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+## 📞 Contact
+
+- 📧 **Issues**: [GitHub Issues](https://github.com/Gaojianli/radius-manager/issues)
+- 💬 **Discussions**: [GitHub Discussions](https://github.com/Gaojianli/radius-manager/discussions)
+- 🐛 **Bug Reports**: [Bug Report Template](https://github.com/Gaojianli/radius-manager/issues/new?template=bug_report.md)
+- ✨ **Feature Requests**: [Feature Request Template](https://github.com/Gaojianli/radius-manager/issues/new?template=feature_request.md)
+
+---
+
+⭐ If this project helps you, please give us a **Star**!
+
+**Happy Coding! 🎉**
