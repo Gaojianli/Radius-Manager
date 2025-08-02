@@ -32,7 +32,7 @@ RUN go mod download
 # 复制源代码
 COPY . .
 # 复制前端构建产物
-COPY --from=frontend-builder /app/web/dist ./static/dist
+COPY --from=frontend-builder /app/static/dist ./static/dist
 
 # 交叉编译后端
 RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -ldflags="-w -s" -o radius_mgnt .
