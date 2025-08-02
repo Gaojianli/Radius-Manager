@@ -1,5 +1,5 @@
 # 前端构建阶段
-FROM node:alpine AS frontend-builder
+FROM --platform=$BUILDPLATFORM node:alpine AS frontend-builder
 
 # 安装 pnpm
 RUN corepack enable pnpm
@@ -17,7 +17,11 @@ COPY web/ ./
 RUN pnpm run build
 
 # 后端构建阶段
-FROM golang:1.24-alpine AS backend-builder
+FROM --platform=$BUILDPLATFORM golang:1.24-alpine AS backend-builder
+
+# 声明构建参数
+ARG TARGETOS
+ARG TARGETARCH
 
 WORKDIR /app
 
@@ -28,10 +32,10 @@ RUN go mod download
 # 复制源代码
 COPY . .
 # 复制前端构建产物
-COPY --from=frontend-builder /app/static/dist ./static/dist
+COPY --from=frontend-builder /app/web/dist ./static/dist
 
-# 构建后端
-RUN CGO_ENABLED=0 GOOS=linux go build -o radius_mgnt .
+# 交叉编译后端
+RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -ldflags="-w -s" -o radius_mgnt .
 
 # 运行阶段
 FROM alpine:latest
