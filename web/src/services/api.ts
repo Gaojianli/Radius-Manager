@@ -90,9 +90,30 @@ export interface AuthLogsResponse {
   }
 }
 
+// 获取 API 基础路径
+const getApiBasePath = () => {
+  // 生产环境下，从当前 URL 构建 API 路径
+  if (import.meta.env.PROD) {
+    const path = window.location.pathname
+    const segments = path.split('/').filter(Boolean)
+    
+    // 移除 index.html 如果存在
+    if (segments.length > 0 && segments[segments.length - 1] === 'index.html') {
+      segments.pop()
+    }
+    
+    // 构建 API 路径
+    const basePath = segments.length > 0 ? `/${segments.join('/')}/` : '/'
+    return `${basePath}api/v1`.replace(/\/+/g, '/') // 清理多余的斜杠
+  }
+  
+  // 开发环境使用相对路径
+  return '/api/v1'
+}
+
 // 创建axios实例
 const api = axios.create({
-  baseURL: '/api/v1',
+  baseURL: getApiBasePath(),
   timeout: 10000,
 })
 

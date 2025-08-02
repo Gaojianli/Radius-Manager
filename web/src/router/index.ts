@@ -1,8 +1,28 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
+// 获取基础路径，支持反向代理部署
+const getBasePath = () => {
+  // 生产环境下，从当前 URL 获取基础路径
+  if (import.meta.env.PROD) {
+    const path = window.location.pathname
+    const segments = path.split('/').filter(Boolean)
+    
+    // 如果 URL 包含 index.html，移除它
+    if (segments.length > 0 && segments[segments.length - 1] === 'index.html') {
+      segments.pop()
+    }
+    
+    // 如果有路径段，返回基础路径；否则返回根路径
+    return segments.length > 0 ? `/${segments.join('/')}/` : '/'
+  }
+  
+  // 开发环境使用根路径
+  return '/'
+}
+
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(getBasePath()),
   routes: [
     {
       path: '/login',

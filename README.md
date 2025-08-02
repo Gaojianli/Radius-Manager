@@ -213,6 +213,196 @@ make docker-build
 docker build -t your-registry/radius-manager .
 ```
 
+## 🔧 FreeRADIUS Integration
+
+### Two-Phase Verification Process
+
+FreeRADIUS uses a two-phase verification mode to ensure security and performance:
+
+1. **Authorize Phase**
+   - Check if user exists
+   - Verify account status (disabled, banned)
+   - Set authentication type
+   - **No password verification**, quickly filter invalid users
+
+2. **Authenticate Phase**
+   - Verify user credentials (password)
+   - Only execute for users who pass authorization
+   - Return final authentication result
+
+### Advantages
+
+- **Performance Optimization**: Invalid users are blocked in authorization phase, reducing password verification overhead
+- **Security Enhancement**: Banned users cannot enter authentication phase
+- **Standard Compliant**: Follows RADIUS protocol design philosophy
+- **Easy to Monitor**: Can separately track authorization and authentication success/failure rates
+
+### API Endpoints
+
+#### Authorization Interface
+Used to check if a user is authorized to authenticate, without password verification.
+
+```http
+POST /api/v1/radius/authorize
+Content-Type: application/json
+
+{
+  "username": "testuser"
+}
+```
+
+#### Authentication Interface
+Used to verify user credentials (username and password).
+
+```http
+POST /api/v1/radius/auth
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "password": "password123"
+}
+```
+
+## FreeRADIUS Configuration
+
+### 1. Install FreeRADIUS
+
+#### Ubuntu/Debian:
+```bash
+sudo apt update
+sudo apt install freeradius freeradius-utils
+```
+
+#### CentOS/RHEL:
+```bash
+sudo yum install freeradius freeradius-utils
+```
+
+### 2. Configure REST Module
+
+Edit `/etc/freeradius/3.0/mods-available/rest`:
+
+```
+rest {
+    tls {
+    }
+    
+    connect_uri = "http://localhost:8080"
+    
+    # Authorization phase: Check user status, set auth type
+    authorize {
+        uri = "${..connect_uri}/api/v1/radius/authorize"
+        method = 'post'
+        body = 'json'
+        data = '{
+            "username": "%{User-Name}"
+        }'
+        tls = ${..tls}
+    }
+    
+    # Authentication phase: Verify user password
+    authenticate {
+        uri = "${..connect_uri}/api/v1/radius/auth"
+        method = 'post'
+        body = 'json'
+        data = '{
+            "username": "%{User-Name}",
+            "password": "%{User-Password}"
+        }'
+        tls = ${..tls}
+    }
+    
+    accounting {
+        uri = "${..connect_uri}/api/v1/radius/accounting"
+        method = 'post'
+        body = 'json'
+        data = '{
+            "username": "%{User-Name}",
+            "acct_type": "%{Acct-Status-Type}",
+            "session_id": "%{Acct-Session-Id}",
+            "session_time": "%{Acct-Session-Time}",
+            "input_octets": "%{Acct-Input-Octets}",
+            "output_octets": "%{Acct-Output-Octets}"
+        }'
+        tls = ${..tls}
+    }
+    
+    pool {
+        start = ${thread[pool].start_servers}
+        min = ${thread[pool].min_spare_servers}
+        max = ${thread[pool].max_servers}
+        spare = ${thread[pool].max_spare_servers}
+        uses = 0
+        retry_delay = 30
+        lifetime = 0
+        idle_timeout = 60
+    }
+}
+```
+
+### 3. Enable REST Module
+
+```bash
+sudo ln -s /etc/freeradius/3.0/mods-available/rest /etc/freeradius/3.0/mods-enabled/
+```
+
+### 4. Configure Sites
+
+Edit `/etc/freeradius/3.0/sites-available/default`:
+
+Add to `authorize` section:
+```
+authorize {
+    # Other configurations...
+    rest
+    if (ok) {
+        update control {
+            Auth-Type := rest
+        }
+    }
+}
+```
+
+Add to `authenticate` section:
+```
+authenticate {
+    # Other configurations...
+    Auth-Type rest {
+        rest
+        if(control:Auth-Type == "Accept") {
+            ok
+        }
+    }
+}
+```
+
+Add to `accounting` section:
+```
+accounting {
+    # Other configurations...
+    rest
+}
+```
+
+### 5. Start FreeRADIUS
+
+```bash
+# Test configuration
+sudo freeradius -X
+
+# Start service
+sudo systemctl enable freeradius
+sudo systemctl start freeradius
+```
+
+### 6. Test Authentication
+
+Use radtest tool to test:
+```bash
+radtest testuser password123 localhost 0 testing123
+```
+
 ## 🎯 Web Interface Features
 
 ### 📱 Mobile Optimization
@@ -255,171 +445,6 @@ docker build -t your-registry/radius-manager .
 - 🔍 Support for filtering and searching by username
 - 📅 Time range queries and sorting
 - 📱 Mobile-adapted table display
-
-## 📡 API Documentation
-
-### Authentication
-
-#### User Login
-```http
-POST /api/v1/auth/login
-Content-Type: application/json
-
-{
-  "username": "admin",
-  "password": "admin123"
-}
-```
-
-Response:
-```json
-{
-  "code": 200,
-  "expire": "2024-01-02T15:04:05Z",
-  "token": "eyJhbGciOiJIUzI1NiIs..."
-}
-```
-
-#### Refresh Token
-```http
-POST /api/v1/auth/refresh
-Authorization: Bearer <token>
-```
-
-### User Management
-
-#### Get User Profile
-```http
-GET /api/v1/user/profile
-Authorization: Bearer <token>
-```
-
-#### Change Password
-```http
-PUT /api/v1/user/change-password
-Authorization: Bearer <token>
-Content-Type: application/json
-
-{
-  "old_password": "oldpass123",
-  "new_password": "newpass123"
-}
-```
-
-### Admin Functions
-
-#### Create User
-```http
-POST /api/v1/admin/users
-Authorization: Bearer <admin-token>
-Content-Type: application/json
-
-{
-  "username": "newuser",
-  "email": "newuser@example.com",
-  "password": "password123",
-  "is_admin": false
-}
-```
-
-#### Get All Users
-```http
-GET /api/v1/admin/users?page=1&limit=20
-Authorization: Bearer <admin-token>
-```
-
-#### Ban/Unban User
-```http
-PUT /api/v1/admin/users/{user_id}/ban
-Authorization: Bearer <admin-token>
-```
-
-#### Delete User
-```http
-DELETE /api/v1/admin/users/{user_id}
-Authorization: Bearer <admin-token>
-```
-
-### FreeRADIUS Integration
-
-FreeRADIUS integration uses the standard Authorize → Authenticate two-phase verification process:
-
-#### Authorization Interface
-Used to check if a user is authorized to authenticate, without password verification.
-
-```http
-POST /api/v1/radius/authorize
-Content-Type: application/json
-
-{
-  "username": "testuser"
-}
-```
-
-Response:
-```json
-{
-  "result": "accept",
-  "username": "testuser", 
-  "message": "User authorized to authenticate",
-  "attrs": {
-    "Auth-Type": "REST",
-    "User-ID": "testuser",
-    "User-Role": "user"
-  }
-}
-```
-
-#### Authentication Interface
-Used to verify user credentials (username and password).
-
-```http
-POST /api/v1/radius/auth
-Content-Type: application/json
-
-{
-  "username": "testuser",
-  "password": "password123"
-}
-```
-
-Response:
-```json
-{
-  "result": "accept",
-  "username": "testuser",
-  "message": "Authentication successful",
-  "attrs": {
-    "User-ID": "testuser",
-    "User-Role": "user",
-    "Session-Type": "authenticated"
-  }
-}
-```
-
-## 🔧 FreeRADIUS Integration
-
-### Two-Phase Verification Process
-
-FreeRADIUS uses a two-phase verification mode to ensure security and performance:
-
-1. **Authorize Phase**
-   - Check if user exists
-   - Verify account status (disabled, banned)
-   - Set authentication type
-   - **No password verification**, quickly filter invalid users
-
-2. **Authenticate Phase**
-   - Verify user credentials (password)
-   - Only execute for users who pass authorization
-   - Return final authentication result
-
-### Advantages
-
-- **Performance Optimization**: Invalid users are blocked in authorization phase, reducing password verification overhead
-- **Security Enhancement**: Banned users cannot enter authentication phase
-- **Standard Compliant**: Follows RADIUS protocol design philosophy
-- **Easy to Monitor**: Can separately track authorization and authentication success/failure rates
 
 ## 📋 Environment Variables
 
