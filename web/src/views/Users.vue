@@ -113,11 +113,49 @@
         <a-form-item field="password" label="密码">
           <a-input-password v-model="createForm.password" placeholder="请输入密码" />
         </a-form-item>
-        <a-form-item field="is_admin" label="角色">
-          <a-switch v-model="createForm.is_admin">
-            <template #checked>管理员</template>
-            <template #unchecked>普通用户</template>
-          </a-switch>
+        <a-form-item field="is_admin" label="用户角色">
+          <a-radio-group v-model="createForm.is_admin" direction="vertical">
+            <a-radio :value="false">
+              <template #radio="{ checked }">
+                <a-space 
+                  align="start" 
+                  class="custom-radio-card" 
+                  :class="{ 'custom-radio-card-checked': checked }"
+                >
+                  <div class="custom-radio-button" :class="{ 'custom-radio-button-checked': checked }">
+                    <div class="custom-radio-inner" v-if="checked"></div>
+                  </div>
+                  <div class="custom-radio-content">
+                    <div class="custom-radio-header">
+                      <icon-user class="custom-radio-icon" :class="{ 'custom-radio-icon-checked': checked }" />
+                      <div class="custom-radio-title">普通用户</div>
+                    </div>
+                    <div class="custom-radio-description">只能查看个人信息和修改密码，无管理权限</div>
+                  </div>
+                </a-space>
+              </template>
+            </a-radio>
+            <a-radio :value="true">
+              <template #radio="{ checked }">
+                <a-space 
+                  align="start" 
+                  class="custom-radio-card" 
+                  :class="{ 'custom-radio-card-checked': checked }"
+                >
+                  <div class="custom-radio-button" :class="{ 'custom-radio-button-checked': checked }">
+                    <div class="custom-radio-inner" v-if="checked"></div>
+                  </div>
+                  <div class="custom-radio-content">
+                    <div class="custom-radio-header">
+                      <icon-user-group class="custom-radio-icon" :class="{ 'custom-radio-icon-checked': checked }" />
+                      <div class="custom-radio-title">管理员</div>
+                    </div>
+                    <div class="custom-radio-description">拥有完整系统权限，可管理用户、查看日志等</div>
+                  </div>
+                </a-space>
+              </template>
+            </a-radio>
+          </a-radio-group>
         </a-form-item>
       </a-form>
     </a-modal>
@@ -136,7 +174,7 @@ import {
 } from '@/services/api'
 import { useAuthStore } from '@/stores/auth'
 import { Message, Modal } from '@arco-design/web-vue'
-import { IconPlus, IconEdit, IconStop, IconDelete } from '@arco-design/web-vue/es/icon'
+import { IconPlus, IconEdit, IconStop, IconDelete, IconUser, IconUserGroup } from '@arco-design/web-vue/es/icon'
 import { onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -492,5 +530,113 @@ onMounted(() => {
   .create-user-modal :deep(.arco-input-password) {
     font-size: 16px !important; /* 防止iOS缩放 */
   }
+}
+
+/* 自定义单选框样式 */
+.custom-radio-card {
+  width: 100%;
+  padding: 16px;
+  border: 1px solid var(--color-border-2);
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  background-color: var(--color-fill-1);
+}
+
+.custom-radio-card:hover {
+  border-color: var(--color-primary-light-4);
+  background-color: var(--color-primary-light-6);
+}
+
+.custom-radio-card-checked {
+  border-color: #165dff !important;
+  background-color: var(--color-primary-light-5) !important;
+}
+
+.custom-radio-button {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--color-border-3);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.custom-radio-button-checked {
+  border-color: #165dff;
+  background-color: #165dff;
+}
+
+.custom-radio-inner {
+  width: 8px;
+  height: 8px;
+  background-color: white;
+  border-radius: 50%;
+}
+
+.custom-radio-content {
+  flex: 1;
+}
+
+.custom-radio-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.custom-radio-icon {
+  font-size: 16px;
+  color: var(--color-text-3);
+  transition: color 0.2s ease;
+}
+
+.custom-radio-icon-checked {
+  color: #165dff;
+}
+
+.custom-radio-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-1);
+  line-height: 20px;
+}
+
+.custom-radio-description {
+  font-size: 12px;
+  color: var(--color-text-3);
+  line-height: 16px;
+  margin-left: 24px;
+}
+
+.custom-radio-card-checked .custom-radio-title {
+  color: #165dff;
+  font-weight: 600;
+}
+
+.custom-radio-card-checked .custom-radio-description {
+  color: var(--color-text-2);
+}
+
+/* 覆盖原始单选框样式 */
+:deep(.arco-radio) {
+  display: block !important;
+  margin-bottom: 12px;
+}
+
+:deep(.arco-radio:last-child) {
+  margin-bottom: 0;
+}
+
+:deep(.arco-radio .arco-radio-button) {
+  display: none !important;
+}
+
+:deep(.arco-radio-group-direction-vertical .arco-radio) {
+  margin-right: 0 !important;
 }
 </style>
