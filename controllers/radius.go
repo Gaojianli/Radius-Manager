@@ -85,8 +85,6 @@ func (rc *RadiusController) Authenticate(ctx context.Context, c *app.RequestCont
 	}()
 
 	c.JSON(consts.StatusOK, RadiusAuthResponse{
-		StatusCode: 200,
-		Reply:      "Welcome, " + user.Username,
 	})
 }
 
