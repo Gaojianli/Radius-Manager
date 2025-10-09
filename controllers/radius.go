@@ -21,12 +21,10 @@ type RadiusAuthRequest struct {
 type RadiusAuthResponse struct {
 	StatusCode int    `json:"REST-HTTP-Status-Code,omitempty"`
 	Reply      string `json:"reply:Reply-Message,omitempty"`
-	AuthType   string `json:"control:Auth-Type"`
 }
 
 type RadiusAuthorizeResponse struct {
 	Reply   string `json:"reply:Reply-Message,omitempty"`
-	Control string `json:"control:Auth-Type,omitempty"`
 }
 
 func (rc *RadiusController) Authenticate(ctx context.Context, c *app.RequestContext) {
@@ -35,17 +33,15 @@ func (rc *RadiusController) Authenticate(ctx context.Context, c *app.RequestCont
 		c.JSON(consts.StatusBadRequest, RadiusAuthResponse{
 			StatusCode: 400,
 			Reply:      "Invalid request format",
-			AuthType:   "Reject",
 		})
 		return
 	}
 
 	user, err := database.DAO.User.GetByUsernameForAuth(ctx, req.Username)
 	if err != nil {
-		c.JSON(consts.StatusOK, RadiusAuthResponse{
+		c.JSON(consts.StatusNotFound, RadiusAuthResponse{
 			StatusCode: 404,
 			Reply:      "Authentication failed: user not found or disabled",
-			AuthType:   "Reject",
 		})
 		return
 	}
@@ -66,10 +62,9 @@ func (rc *RadiusController) Authenticate(ctx context.Context, c *app.RequestCont
 			database.DAO.AuthLog.Create(context.Background(), authLog)
 		}()
 
-		c.JSON(consts.StatusOK, RadiusAuthResponse{
+		c.JSON(consts.StatusForbidden, RadiusAuthResponse{
 			StatusCode: 403,
 			Reply:      "Authentication failed: invalid password",
-			AuthType:   "Reject",
 		})
 		return
 	}
@@ -92,7 +87,6 @@ func (rc *RadiusController) Authenticate(ctx context.Context, c *app.RequestCont
 	c.JSON(consts.StatusOK, RadiusAuthResponse{
 		StatusCode: 200,
 		Reply:      "Welcome, " + user.Username,
-		AuthType:   "Accept",
 	})
 }
 
@@ -112,14 +106,13 @@ func (rc *RadiusController) Authorize(ctx context.Context, c *app.RequestContext
 	success := err == nil
 
 	if !success {
-		c.JSON(consts.StatusOK, RadiusAuthorizeResponse{
+		c.JSON(consts.StatusForbidden, RadiusAuthorizeResponse{
 			Reply: "User not found, disabled, or banned",
 		})
 		return
 	}
 
 	c.JSON(consts.StatusOK, RadiusAuthorizeResponse{
-		Control: "REST",
 	})
 }
 
