@@ -44,12 +44,12 @@
           <template #cell="{ record }">
             <a-space>
               <a-tooltip content="修改密码">
-                <a-button 
-                  type="text" 
+                <a-button
+                  type="text"
                   size="small"
                   shape="circle"
                   class="action-btn edit-btn"
-                  @click="router.push({ name: 'Profile' })"
+                  @click="showChangePasswordModal(record)"
                 >
                   <template #icon><icon-edit /></template>
                 </a-button>
@@ -93,6 +93,72 @@
     >
       <template #icon><icon-plus /></template>
     </a-button>
+
+    <!-- 修改密码模态框 -->
+    <a-modal
+      v-model:visible="showPasswordModal"
+      :title="`修改用户密码 - ${selectedUser?.username}`"
+      @ok="handleChangeUserPassword"
+      :confirm-loading="passwordLoading"
+      class="change-password-modal"
+      :width="500"
+    >
+      <div class="password-change-content">
+        <div class="user-info-section">
+          <div class="section-header">
+            <icon-user class="section-icon" />
+            <span class="section-title">当前操作用户</span>
+          </div>
+          <a-descriptions :column="1" size="small" class="user-descriptions">
+            <a-descriptions-item label="用户名">
+              {{ selectedUser?.username }}
+            </a-descriptions-item>
+            <a-descriptions-item label="邮箱">
+              {{ selectedUser?.email }}
+            </a-descriptions-item>
+            <a-descriptions-item label="角色">
+              <a-tag :color="selectedUser?.is_admin ? 'red' : 'blue'" size="small">
+                {{ selectedUser?.is_admin ? '管理员' : '普通用户' }}
+              </a-tag>
+            </a-descriptions-item>
+            <a-descriptions-item label="状态">
+              <a-tag :color="selectedUser?.banned ? 'gray' : 'green'" size="small">
+                {{ selectedUser?.banned ? '已封禁' : '正常' }}
+              </a-tag>
+            </a-descriptions-item>
+          </a-descriptions>
+        </div>
+
+        <a-form ref="passwordFormRef" :model="passwordForm" :rules="passwordRules" layout="vertical">
+          <a-form-item field="new_password" label="新密码">
+            <a-input-password
+              v-model="passwordForm.new_password"
+              placeholder="请输入新密码（至少6位字符）"
+              size="large"
+            />
+          </a-form-item>
+          <a-form-item field="confirm_password" label="确认新密码">
+            <a-input-password
+              v-model="passwordForm.confirm_password"
+              placeholder="请再次输入新密码"
+              size="large"
+            />
+          </a-form-item>
+        </a-form>
+
+        <a-alert type="warning" show-icon class="security-warning">
+          <template #icon><icon-exclamation-circle /></template>
+          <div>
+            <div class="alert-title">安全提醒</div>
+            <ul class="security-tips">
+              <li>新密码将立即生效，用户需要使用新密码重新登录</li>
+              <li>建议使用包含字母、数字和特殊字符的强密码</li>
+              <li>请确认用户身份后再进行密码修改操作</li>
+            </ul>
+          </div>
+        </a-alert>
+      </div>
+    </a-modal>
 
     <!-- 创建用户模态框 -->
     <a-modal
@@ -169,12 +235,14 @@ import {
   toggleUserBan as apiToggleUserBan,
   createUser,
   getUsers,
+  adminChangePassword,
   type CreateUserRequest,
+  type AdminChangePasswordRequest,
   type User
 } from '@/services/api'
 import { useAuthStore } from '@/stores/auth'
 import { Message, Modal } from '@arco-design/web-vue'
-import { IconPlus, IconEdit, IconStop, IconDelete, IconUser, IconUserGroup } from '@arco-design/web-vue/es/icon'
+import { IconPlus, IconEdit, IconStop, IconDelete, IconUser, IconUserGroup, IconExclamationCircle } from '@arco-design/web-vue/es/icon'
 import { onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -192,6 +260,16 @@ const pagination = reactive({
   pageSizeOptions: ['10', '20', '50', '100']
 })
 
+// 修改密码
+const showPasswordModal = ref(false)
+const passwordLoading = ref(false)
+const passwordFormRef = ref()
+const selectedUser = ref<User | null>(null)
+const passwordForm = reactive({
+  new_password: '',
+  confirm_password: ''
+})
+
 // 创建用户
 const showCreateModal = ref(false)
 const createLoading = ref(false)
@@ -202,6 +280,25 @@ const createForm = reactive<CreateUserRequest & { is_admin: boolean }>({
   password: '',
   is_admin: false
 })
+
+const passwordRules = {
+  new_password: [
+    { required: true, message: '请输入新密码' },
+    { min: 6, message: '密码至少6个字符' }
+  ],
+  confirm_password: [
+    { required: true, message: '请确认新密码' },
+    {
+      validator: (value: string, cb: (error?: string) => void) => {
+        if (value !== passwordForm.new_password) {
+          cb('两次输入的密码不一致')
+        } else {
+          cb()
+        }
+      }
+    }
+  ]
+}
 
 const createRules = {
   username: [
@@ -276,6 +373,47 @@ const resetCreateForm = () => {
     password: '',
     is_admin: false
   })
+}
+
+// 显示修改密码模态框
+const showChangePasswordModal = (user: User) => {
+  selectedUser.value = user
+  showPasswordModal.value = true
+}
+
+// 处理修改用户密码
+const handleChangeUserPassword = async () => {
+  if (!passwordFormRef.value || !selectedUser.value) return
+
+  try {
+    await passwordFormRef.value.validate()
+  } catch (error) {
+    return // 验证失败
+  }
+
+  passwordLoading.value = true
+  try {
+    const changePasswordData: AdminChangePasswordRequest = {
+      new_password: passwordForm.new_password
+    }
+
+    await adminChangePassword(selectedUser.value.id, changePasswordData)
+    Message.success(`用户 ${selectedUser.value.username} 的密码修改成功`)
+    showPasswordModal.value = false
+    resetPasswordForm()
+  } catch (error) {
+    console.error('Failed to change user password:', error)
+  } finally {
+    passwordLoading.value = false
+  }
+}
+
+const resetPasswordForm = () => {
+  Object.assign(passwordForm, {
+    new_password: '',
+    confirm_password: ''
+  })
+  selectedUser.value = null
 }
 
 
@@ -638,5 +776,103 @@ onMounted(() => {
 
 :deep(.arco-radio-group-direction-vertical .arco-radio) {
   margin-right: 0 !important;
+}
+
+/* 密码修改模态框样式 */
+.password-change-content {
+  padding: 0;
+}
+
+.user-info-section {
+  margin-bottom: 24px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.section-icon {
+  color: var(--color-primary);
+  font-size: 16px;
+}
+
+.section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-1);
+}
+
+.user-descriptions :deep(.arco-descriptions-item-label) {
+  color: var(--color-text-2);
+  font-weight: 500;
+  width: 80px;
+  padding: 8px 0;
+}
+
+.user-descriptions :deep(.arco-descriptions-item-value) {
+  color: var(--color-text-1);
+  padding: 8px 0;
+}
+
+.security-warning {
+  margin-top: 24px;
+  border-radius: 8px;
+}
+
+.security-tips {
+  margin: 8px 0 0 0;
+  padding-left: 16px;
+}
+
+.security-tips li {
+  font-size: 13px;
+  line-height: 1.5;
+  margin-bottom: 4px;
+  color: var(--color-text-2);
+}
+
+/* 模态框响应式优化 */
+.change-password-modal :deep(.arco-modal) {
+  max-width: 90vw;
+}
+
+.change-password-modal :deep(.arco-modal-body) {
+  padding: 24px 32px;
+}
+
+.change-password-modal :deep(.arco-form-item) {
+  margin-bottom: 20px;
+}
+
+.change-password-modal :deep(.arco-input-password),
+.change-password-modal :deep(.arco-input) {
+  border-radius: 6px;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .change-password-modal :deep(.arco-modal) {
+    width: calc(100vw - 32px) !important;
+    margin: 16px !important;
+  }
+
+  .change-password-modal :deep(.arco-modal-body) {
+    padding: 20px 24px !important;
+  }
+
+  .user-details {
+    gap: 8px;
+  }
+
+  .user-field {
+    font-size: 12px;
+  }
+
+  .security-tips li {
+    font-size: 12px;
+  }
 }
 </style>

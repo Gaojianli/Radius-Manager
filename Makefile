@@ -65,3 +65,16 @@ lint: ## 检查代码规范
 	@go vet ./...
 	@echo "🔍 检查前端代码规范..."
 	@cd web && npm run lint || echo "前端检查命令不存在，跳过"
+
+# 管理员工具
+admin-reset-password: ## 重置admin密码为默认密码(admin123)
+	@echo "🔐 重置admin密码..."
+	@go run cmd/admin_tool.go reset-password
+
+admin-create: ## 创建默认admin用户
+	@echo "👤 创建admin用户..."
+	@go run cmd/admin_tool.go create-admin
+
+admin-init: ## 初始化admin用户(创建或重置密码)
+	@echo "🚀 初始化admin用户..."
+	@go run cmd/admin_tool.go init
