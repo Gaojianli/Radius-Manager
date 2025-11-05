@@ -261,27 +261,22 @@ rest {
     
     # 授权阶段：检查用户状态，设置认证类型
     authorize {
-        uri = "${..connect_uri}/api/v1/radius/authorize"
+		uri = "${..connect_uri}/api/v1/radius/authorize"
         method = 'post'
         body = 'json'
-        data = '{
-            "username": "%{User-Name}"
-        }'
+        data = '{            "username": "%{User-Name}"        }'
         tls = ${..tls}
-    }
-    
-    # 认证阶段：验证用户密码
-    authenticate {
+	}
+	authenticate {
         uri = "${..connect_uri}/api/v1/radius/auth"
+	    headers = {
+		    "X-Device-MAC" = "%{Calling-Station-Id}"
+	    }
         method = 'post'
         body = 'json'
-        data = '{
-            "username": "%{User-Name}",
-            "password": "%{User-Password}"
-        }'
+        data = '{            "username": "%{User-Name}",            "password": "%{User-Password}"        }'
         tls = ${..tls}
-    }
-    
+	}
     accounting {
         uri = "${..connect_uri}/api/v1/radius/accounting"
         method = 'post'
@@ -323,25 +318,18 @@ sudo ln -s /etc/freeradius/3.0/mods-available/rest /etc/freeradius/3.0/mods-enab
 在 `authorize` 段落中添加：
 ```
 authorize {
-    # 其他配置...
-    rest
-    if (ok) {
-        update control {
-            Auth-Type := rest
-        }
+    eap-home {
+        ok = return
     }
+    rest
 }
 ```
 
 在 `authenticate` 段落中添加：
 ```
 authenticate {
-    # 其他配置...
-    Auth-Type rest{
-        rest
-        if(control:Auth-Type == "Accept"){
-            ok
-        }
+    Auth-Type eap-home {
+        eap-home
     }
 }
 ```

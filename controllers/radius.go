@@ -24,7 +24,7 @@ type RadiusAuthResponse struct {
 }
 
 type RadiusAuthorizeResponse struct {
-	Reply   string `json:"reply:Reply-Message,omitempty"`
+	Reply string `json:"reply:Reply-Message,omitempty"`
 }
 
 func (rc *RadiusController) Authenticate(ctx context.Context, c *app.RequestContext) {
@@ -49,14 +49,16 @@ func (rc *RadiusController) Authenticate(ctx context.Context, c *app.RequestCont
 	if !user.CheckPassword(req.Password) {
 		// 记录密码错误的认证日志
 		authLog := &models.AuthLog{
-			Username:  req.Username,
-			AuthType:  "authenticate",
-			Success:   false,
-			IPAddress: c.ClientIP(),
-			UserAgent: string(c.GetHeader("User-Agent")),
-			CreatedAt: time.Now(),
+			Username:   req.Username,
+			AuthType:   "authenticate",
+			Success:    false,
+			IPAddress:  string(c.GetHeader("X-NAS-IP")),
+			UserAgent:  string(c.UserAgent()),
+			DeviceMAC:  string(c.GetHeader("X-Device-MAC")),
+			TargetSSID: string(c.GetHeader("X-Target-SSID")),
+			CreatedAt:  time.Now(),
 		}
-		
+
 		// 异步记录日志，不影响响应速度
 		go func() {
 			database.DAO.AuthLog.Create(context.Background(), authLog)
@@ -71,21 +73,22 @@ func (rc *RadiusController) Authenticate(ctx context.Context, c *app.RequestCont
 
 	// 记录认证成功的日志
 	authLog := &models.AuthLog{
-		Username:  user.Username,
-		AuthType:  "authenticate",
-		Success:   true,
-		IPAddress: c.ClientIP(),
-		UserAgent: string(c.GetHeader("User-Agent")),
-		CreatedAt: time.Now(),
+		Username:   user.Username,
+		AuthType:   "authenticate",
+		Success:    true,
+		IPAddress:  string(c.GetHeader("X-NAS-IP")),
+		UserAgent:  string(c.UserAgent()),
+		DeviceMAC:  string(c.GetHeader("X-Device-MAC")),
+		TargetSSID: string(c.GetHeader("X-Target-SSID")),
+		CreatedAt:  time.Now(),
 	}
-	
+
 	// 异步记录日志，不影响响应速度
 	go func() {
 		database.DAO.AuthLog.Create(context.Background(), authLog)
 	}()
 
-	c.JSON(consts.StatusOK, RadiusAuthResponse{
-	})
+	c.JSON(consts.StatusOK, RadiusAuthResponse{})
 }
 
 func (rc *RadiusController) Authorize(ctx context.Context, c *app.RequestContext) {
@@ -110,8 +113,7 @@ func (rc *RadiusController) Authorize(ctx context.Context, c *app.RequestContext
 		return
 	}
 
-	c.JSON(consts.StatusOK, RadiusAuthorizeResponse{
-	})
+	c.JSON(consts.StatusOK, RadiusAuthorizeResponse{})
 }
 
 func (rc *RadiusController) Accounting(ctx context.Context, c *app.RequestContext) {

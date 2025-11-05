@@ -287,31 +287,29 @@ Edit `/etc/freeradius/3.0/mods-available/rest`:
 rest {
     tls {
     }
-    
+
     connect_uri = "http://localhost:8080"
-    
+
     # Authorization phase: Check user status, set auth type
     authorize {
-        uri = "${..connect_uri}/api/v1/radius/authorize"
+		uri = "${..connect_uri}/api/v1/radius/authorize"
         method = 'post'
         body = 'json'
-        data = '{
-            "username": "%{User-Name}"
-        }'
+        data = '{            "username": "%{User-Name}"        }'
         tls = ${..tls}
-    }
-    
-    # Authentication phase: Verify user password
-    authenticate {
+	}
+	authenticate {
         uri = "${..connect_uri}/api/v1/radius/auth"
+	    headers = {
+		    "X-Device-MAC" = "%{Calling-Station-Id}"
+		    "X-Target-SSID" = "%{Called-Station-SSID}"
+		    "X-NAS-IP" = "%{NAS-IP-Address}"
+	    }
         method = 'post'
         body = 'json'
-        data = '{
-            "username": "%{User-Name}",
-            "password": "%{User-Password}"
-        }'
+        data = '{            "username": "%{User-Name}",            "password": "%{User-Password}"        }'
         tls = ${..tls}
-    }
+	}
     
     accounting {
         uri = "${..connect_uri}/api/v1/radius/accounting"
@@ -354,25 +352,18 @@ Edit `/etc/freeradius/3.0/sites-available/default`:
 Add to `authorize` section:
 ```
 authorize {
-    # Other configurations...
-    rest
-    if (ok) {
-        update control {
-            Auth-Type := rest
-        }
+    eap-home {
+        ok = return
     }
+    rest
 }
 ```
 
 Add to `authenticate` section:
 ```
 authenticate {
-    # Other configurations...
-    Auth-Type rest {
-        rest
-        if(control:Auth-Type == "Accept") {
-            ok
-        }
+    Auth-Type eap-home {
+        eap-home
     }
 }
 ```

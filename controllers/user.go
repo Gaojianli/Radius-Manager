@@ -50,13 +50,15 @@ type AuthLogsResponse struct {
 }
 
 type AuthLogResponse struct {
-	ID        uint   `json:"id"`
-	Username  string `json:"username"`
-	AuthType  string `json:"auth_type"`
-	Success   bool   `json:"success"`
-	IPAddress string `json:"ip_address"`
-	UserAgent string `json:"user_agent"`
-	CreatedAt int64  `json:"created_at"`
+	ID         uint   `json:"id"`
+	Username   string `json:"username"`
+	AuthType   string `json:"auth_type"`
+	Success    bool   `json:"success"`
+	IPAddress  string `json:"ip_address"`
+	UserAgent  string `json:"user_agent"`
+	DeviceMAC  string `json:"device_mac"`
+	TargetSSID string `json:"target_ssid"`
+	CreatedAt  int64  `json:"created_at"`
 }
 
 func (uc *UserController) AdminCreateUser(ctx context.Context, c *app.RequestContext) {
@@ -554,13 +556,15 @@ func (uc *UserController) GetAuthLogs(ctx context.Context, c *app.RequestContext
 	logResponses := make([]AuthLogResponse, len(logs))
 	for i, log := range logs {
 		logResponses[i] = AuthLogResponse{
-			ID:        log.ID,
-			Username:  log.Username,
-			AuthType:  log.AuthType,
-			Success:   log.Success,
-			IPAddress: log.IPAddress,
-			UserAgent: log.UserAgent,
-			CreatedAt: log.CreatedAt.Unix(),
+			ID:         log.ID,
+			Username:   log.Username,
+			AuthType:   log.AuthType,
+			Success:    log.Success,
+			IPAddress:  log.IPAddress,
+			UserAgent:  log.UserAgent,
+			DeviceMAC:  log.DeviceMAC,
+			TargetSSID: log.TargetSSID,
+			CreatedAt:  log.CreatedAt.Unix(),
 		}
 	}
 

@@ -75,6 +75,8 @@ export interface AuthLog {
   success: boolean
   ip_address: string
   user_agent: string
+  device_mac: string
+  target_ssid: string
   created_at: number
 }
 

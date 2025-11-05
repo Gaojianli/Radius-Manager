@@ -109,6 +109,16 @@ const columns = [
     width: 150
   },
   {
+    title: '设备MAC',
+    dataIndex: 'device_mac',
+    width: 150
+  },
+  {
+    title: 'SSID',
+    dataIndex: 'target_ssid',
+    width: 120
+  },
+  {
     title: 'User-Agent',
     dataIndex: 'user_agent',
     slotName: 'user-agent'
