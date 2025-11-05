@@ -75,7 +75,7 @@ export interface AuthLog {
   success: boolean
   ip_address: string
   user_agent: string
-  created_at: string
+  created_at: number
 }
 
 export interface AuthLogsResponse {

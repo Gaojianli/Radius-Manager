@@ -152,9 +152,17 @@ const handlePageSizeChange = (pageSize: number) => {
 }
 
 
-// 格式化日期
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleString('zh-CN')
+// 格式化日期 - 将 Unix 时间戳转换为本地时间
+const formatDate = (timestamp: number) => {
+  return new Date(timestamp * 1000).toLocaleString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  })
 }
 
 onMounted(() => {

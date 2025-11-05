@@ -56,7 +56,7 @@ type AuthLogResponse struct {
 	Success   bool   `json:"success"`
 	IPAddress string `json:"ip_address"`
 	UserAgent string `json:"user_agent"`
-	CreatedAt string `json:"created_at"`
+	CreatedAt int64  `json:"created_at"`
 }
 
 func (uc *UserController) AdminCreateUser(ctx context.Context, c *app.RequestContext) {
@@ -560,7 +560,7 @@ func (uc *UserController) GetAuthLogs(ctx context.Context, c *app.RequestContext
 			Success:   log.Success,
 			IPAddress: log.IPAddress,
 			UserAgent: log.UserAgent,
-			CreatedAt: log.CreatedAt.Format("2006-01-02 15:04:05"),
+			CreatedAt: log.CreatedAt.Unix(),
 		}
 	}
 
