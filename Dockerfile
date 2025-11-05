@@ -2,7 +2,7 @@
 FROM --platform=$BUILDPLATFORM node:alpine AS frontend-builder
 
 # 安装 pnpm
-RUN npm i -g pnpm && CI=1 pnpm i
+RUN npm i -g pnpm
 
 WORKDIR /app/web
 
